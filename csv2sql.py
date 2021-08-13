@@ -10,19 +10,19 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="SQLite DB Importer and Updater",
-        epilog="Example: python csv2sql.py -i monday.csv -d database1.db -t monday")
+        epilog="Example: python csv2sql.py -i items.csv -d database1.db -t items")
     parser.add_argument(
         "-i", "--infile", type=argparse.FileType("r"), default=sys.stdin,
-        metavar="PATH",
+        metavar="PATH", required=True,
         help="CSV file to import.")
     parser.add_argument(
         "-a", "--append", action="store_true",
         help="Append to existing table.")
     parser.add_argument(
-        "-d", "--db", action="store",
+        "-d", "--db", action="store", required=True,
         help="The name of the DB to work with.")
     parser.add_argument(
-        "-t", "--table", type=str, action="store",
+        "-t", "--table", action="store", required=True,
         help="The name of the table to work with.")
 
     args = parser.parse_args()
@@ -67,15 +67,11 @@ def csv_to_new_sqlite_table(
         print(f"OK, import successful.")
 
     except Exception as e:
-        print(f"\n{e} {csv.name} not imported.")
-        print("Use the flag '-a' if you want to append to an existing table.")
-        print("Example: \npython csv2sql.py -i monday.csv -d database1.db -t table -a")
+        print(f"\n!!! {e} {csv.name} not imported.")
+        print("To append to an existing table, use the flag '-a'.")
+        print("Example: python csv2sql.py -i monday.csv -d database1.db -t table -a")
 
     connection.commit()
-
-    table_count(cursor, table)
-
-    return
 
 
 def create_index(
@@ -103,7 +99,7 @@ def create_index(
         connection.commit()
 
     except Exception as e:
-        print("Index creation failed", e)
+        print("!!! Index creation failed", e)
 
 
 def append_csv_to_table(
@@ -115,7 +111,7 @@ def append_csv_to_table(
 
     """
     Reads the incoming csv into a dataframe,
-    then iterates through each row, inserting the relevant fields.
+    then iterates through each row, appending the relevant fields.
     If there are duplicate on unique index column, skip and do nothing.
 
     ARGS: sqlite cursor + connection,
@@ -124,11 +120,22 @@ def append_csv_to_table(
 
     RETS: nothing, commits changes to the SQLite DB.
     """
-    #! TODODO: just be the same shape as the existing table.
-    incoming_df = pd.read_csv(csv)
 
-    #! this cannot deal with unclean data. sql hates quotes and brackets. todo.
-    #! [although cleaning should be elsewhere. raw dirty, DB clean.]
+    print(f"\nAppending {csv.name} to table '{table}' in DB '{db}'...")
+
+    #~ check if table actually exists
+    try:
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [x[0] for x in cursor.fetchall()]
+        if not table in tables:
+            print(f"\n!!! Table '{table}' doesn't exist in database '{db}'.")
+            print(f"Remove the append flag to create a new table instead.")
+            sys.exit(1)
+    except Exception as e:
+        print(e)
+
+    incoming_df = pd.read_csv(csv)
+    # try:
     for _, row in incoming_df.iterrows():
         cursor.execute(
             f"""INSERT INTO {table}
@@ -138,18 +145,35 @@ def append_csv_to_table(
                 "{row["name"]}",
                 "{row["PDP_productPrice"]}")
                 ON CONFLICT DO NOTHING;""")
+    # pd.read_csv(csv).to_sql( #! pandas cannot check for dups
+    #     table,
+    #     connection,
+    #     if_exists="append",
+    #     index=False)
+    print(f"OK, append successful.")
+    # except Exception as e:
+    #     print(f"\n!!! {e} {csv.name} not appended.")
 
     connection.commit()
 
 
-def table_count(cursor, table_name):
+def examine_db(cursor, table_name, db):
+
+    """
+    Basic summary of the DB status.
+    Prints the number and size of each table.
+    """
 
     try:
-        cursor.execute(f"SELECT max(rowid) FROM {table_name};")
-        row_count = cursor.fetchone()[0]
-        cursor.execute(f"PRAGMA table_info({table_name});")
-        column_count = len(cursor.fetchall())
-        print(f"There are currently {row_count} records across {column_count} columns in '{table_name}'.")
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [x[0] for x in cursor.fetchall()]
+        print(f"\nDatabase '{db}' currently contains {len(tables)} tables.")
+        for t in tables:
+            cursor.execute(f"SELECT max(rowid) FROM {t};")
+            row_count = cursor.fetchone()[0]
+            cursor.execute(f"PRAGMA table_info({t});")
+            column_count = len(cursor.fetchall())
+            print(f"{row_count} records across {column_count} columns in table '{t}'.")
     except Exception as e:
         print(e)
 
@@ -160,11 +184,14 @@ def main():
 
     if len(sys.argv) < 2:
         parser.print_help()
-        sys.exit(0)
+        sys.exit(1)
 
     infile = args.infile
     db = args.db
     table = args.table
+    if table.isnumeric(): #! this doesn't catch decimals
+        print("\nTables cannot be named as a number. Please try again.")
+        sys.exit(1)
 
     #~ connect!
     connection, cursor = sqlite_connect(db)
@@ -196,6 +223,8 @@ def main():
     #             product_table,
     #             product_index,
     #             "productid")
+
+    examine_db(cursor, table, db)
 
     #~ close connection to DB
     connection.close()
