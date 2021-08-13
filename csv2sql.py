@@ -15,7 +15,7 @@ def args_setup():
         "-f", "--file", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
         help="CSV file to import.")
-    parser.add_argument(
+    parser.add_argument( #! redundant
         "-a", "--append", action="store_true",
         help="Append to existing table.")
     parser.add_argument(
