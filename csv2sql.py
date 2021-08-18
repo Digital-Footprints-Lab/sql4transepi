@@ -30,7 +30,6 @@ def args_setup():
         "-i", "--index", action="store",
         help="The name of the table to work with.")
 
-
     args = parser.parse_args()
 
     return parser, args
@@ -60,6 +59,10 @@ def csv_to_sqlite_table(
     connection):
 
     """
+    Imports a CSV file into SQLite table. If the table already
+    exists, the CSV is added, with any duplicates ignored.
+    "Duplicate" means a record where every field is identical.
+
     ARGS: sqlite cursor + connection,
           name of table to index,
           name of incoming csv file,
@@ -67,6 +70,15 @@ def csv_to_sqlite_table(
 
     RETS: nothing, commits changes to SQLite DB.
     """
+
+    if not re.match("^[a-zA-Z0-9]+$", table):
+        print("\n!!! Table names can only include standard characters. Please retry.")
+        connection.close()
+        sys.exit(1)
+    if table[0].isnumeric():
+        print("\n!!! Table names cannot start with a number. Please retry.")
+        connection.close()
+        sys.exit(1)
 
     #~ check if table already exists
     cursor.execute(f"""
@@ -93,6 +105,7 @@ def csv_to_sqlite_table(
                 pass #! fix me!
         except Exception as e:
             print(f"\n!!! {e} \n!!! {csv_file.name} not appended.")
+
     connection.commit()
 
 
@@ -153,13 +166,6 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if not re.match("^[a-zA-Z0-9]+$", args.table):
-        print("\n!!! Tables names can only include standard characters. Please retry.")
-        sys.exit(1)
-    if args.table[0].isnumeric(): #! this doesn't catch decimals
-        print("\n!!! Tables names cannot start with a number. Please retry.")
-        sys.exit(1)
-
     #~ connect!
     connection, cursor = sqlite_connect(args.db)
 
@@ -180,8 +186,12 @@ def main():
 
     examine_db(cursor, args.db)
 
-    #~ close connection to DB
-    connection.close()
+    try:
+        connection.close()
+        print("\nConnection closed.")
+    except Exception as e:
+        print(f"\n!!! Problem closing connection: {e}")
+
 
 if __name__ == "__main__":
 
