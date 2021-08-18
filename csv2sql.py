@@ -34,10 +34,10 @@ def args_setup():
     return parser, args
 
 
-def sqlite_connect(db_name):
+def sqlite_connect(db):
 
     #~ connect to our working DB
-    connection = sqlite3.connect(db_name)
+    connection = sqlite3.connect(db)
     #~ c is the cursor object: executes SQL on DB table
     cursor = connection.cursor()
 
@@ -46,10 +46,10 @@ def sqlite_connect(db_name):
 
 def csv_to_sqlite_table(
     db,
+    table,
+    csv_file,
     cursor,
-    connection,
-    csv,
-    table):
+    connection):
 
     """
     ARGS: sqlite cursor + connection,
@@ -68,24 +68,62 @@ def csv_to_sqlite_table(
     if cursor.fetchone() == None: #~ table doesn't exit yet
         print(f"\nCreating new table '{table}' in DB '{db}'...")
         try:                      #~ so create table from csv
-            pd.read_csv(csv).to_sql(
+            pd.read_csv(csv_file).to_sql(
                 table,
                 connection,
                 if_exists="fail",
                 index=False)
             print(f"OK, import successful.")
         except Exception as e:
-            print(f"\n!!! {e} \n!!! {csv.name} not imported.")
+            print(f"\n!!! {e} \n!!! {csv_file.name} not imported.")
 
     else: #~ table exists, do an INSERT
         print(f"\nTable '{table}' exists, appending records...")
+        # try:                      #~ so create table from csv
+        #     pd.read_csv(csv).to_sql(
+        #         table,
+        #         connection,
+        #         if_exists="append",
+        #         index=False)
+        #     print(f"OK, append successful.")
+        # except Exception as e:
+        #     print(f"\n!!! {e} \n!!! {csv.name} not appended.")
+
         try:
-            cursor.execute(f"""
+            with open(csv_file.name, "r") as infile:
+    # csv.DictReader uses first line in file for column headings by default
+                dict_read = csv.DictReader(infile) # comma is default delimiter
+                to_db = [(
+                    i['SHOP_WEEK'],
+                    i['SHOP_DATE'],
+                    i['SHOP_WEEKDAY'],
+                    i['SHOP_HOUR'],
+                    i['QUANTITY'],
+                    i['SPEND'],
+                    i['PROD_CODE'],
+                    i['PROD_CODE_10'],
+                    i['PROD_CODE_20'],
+                    i['PROD_CODE_30'],
+                    i['PROD_CODE_40'],
+                    i['CUST_CODE'],
+                    i['CUST_PRICE_SENSITIVITY'],
+                    i['CUST_LIFESTAGE'],
+                    i['BASKET_ID'],
+                    i['BASKET_SIZE'],
+                    i['BASKET_PRICE_SENSITIVITY'],
+                    i['BASKET_TYPE'],
+                    i['BASKET_DOMINANT_MISSION'],
+                    i['STORE_CODE'],
+                    i['STORE_FORMAT'],
+                    i['STORE_REGION']) for i in dict_read]
+
+        # cur.executemany("INSERT INTO t (col1, col2) VALUES (?, ?);", to_db)
+            cursor.executemany(f"""
                 INSERT INTO {table}
                 (SHOP_WEEK,SHOP_DATE,SHOP_WEEKDAY,SHOP_HOUR,QUANTITY,SPEND,PROD_CODE,PROD_CODE_10,PROD_CODE_20,PROD_CODE_30,PROD_CODE_40,CUST_CODE,CUST_PRICE_SENSITIVITY,CUST_LIFESTAGE,BASKET_ID,BASKET_SIZE,BASKET_PRICE_SENSITIVITY,BASKET_TYPE,BASKET_DOMINANT_MISSION,STORE_CODE,STORE_FORMAT,STORE_REGION)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);""")
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);""", [to_db])
         except Exception as e:
-            print(f"\n!!! {e} \n!!! {csv.name} not appended.")
+            print(f"\n!!! {e} \n!!! {csv_file.name} not appended.")
     connection.commit()
 
 
@@ -173,7 +211,7 @@ def create_index(
 #     connection.commit()
 
 
-def examine_db(cursor, table_name, db):
+def examine_db(cursor, db):
 
     """
     Basic summary of the DB status.
@@ -202,36 +240,20 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    file = args.file
-    db = args.db
-    table = args.table
-    if table.isnumeric(): #! this doesn't catch decimals
-        print("\n!!! Tables cannot be named as a number. Please try again.")
+    if args.table.isnumeric(): #! this doesn't catch decimals
+        print("\n!!! Tables cannot be named as a number. Please retry.")
         sys.exit(1)
 
     #~ connect!
-    connection, cursor = sqlite_connect(db)
+    connection, cursor = sqlite_connect(args.db)
 
-    if args.append:
-
-        append_csv_to_table(
-            db,
-            cursor,
-            connection,
-            file,
-            table)
-
-    else:
-        #~ bring product csv into sqlite table
-        csv_to_sqlite_table(
-            db,
-            cursor,
-            connection,
-            file,
-            table)
-
-    # #~ adding new products to table to test duplicate prevention
-    # add_csv_lines_to_table(cursor, connection, more_csv, product_table)
+    #~ bring product csv into sqlite table
+    csv_to_sqlite_table(
+        args.db,
+        args.table,
+        args.file,
+        cursor,
+        connection)
 
     # #~ index on productid column
     # create_index(cursor,
@@ -240,7 +262,7 @@ def main():
     #             product_index,
     #             "productid")
 
-    examine_db(cursor, table, db)
+    examine_db(cursor, args.db)
 
     #~ close connection to DB
     connection.close()

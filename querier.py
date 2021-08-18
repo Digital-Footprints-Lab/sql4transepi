@@ -1,8 +1,12 @@
 import sys
+import os
+import re
 import argparse
 import csv
 import pandas as pd
 import sqlite3
+
+import csv2sql
 
 """Eventually, we might want to use
 pypika SQL query builder package, although right now
@@ -43,51 +47,62 @@ def sqlite_connect(db_name):
     return connection, cursor
 
 
-def customer_query(
+def query_builder(
+    date="",
+    customer=""):
+    # since="", #! TO DO!
+    # until="",
+
+    """
+    Builds the SQL query statements from supplied args.
+
+    ARGS:   Database details (db, table, cursor, connection)
+            Date in the format YYYYMMDD, for example 20180426
+            For data ranges, provide two dates (either order will work)
+            For customers, number(s), ID in format CUST0123456789
+    """
+
+    queries_list = []
+
+    if customer: #~ construct the customer query SQL
+        query_customer = f"""CUST_CODE = \"{customer}\""""
+        queries_list.append(query_customer)
+
+    if date: #~ construct the date query SQL
+        if len(date) == 1:
+            query_date = f"""SHOP_DATE = \"{date[0]}\""""
+        if len(date) == 2:
+            query_date = f"""SHOP_DATE >= \"{min(date)}\" AND SHOP_DATE <= \"{max(date)}\""""
+        if len(date) > 2:
+            print(f"\n!!! Please provide only two dates.")
+            sys.exit(1)
+        queries_list.append(query_date)
+
+    return queries_list
+
+
+def query_runner(
     db,
     table,
     cursor,
     connection,
-    customer):
+    queries):
 
-    """
-    Carries out a simple customer query
-    """
-
-    cursor.execute(f"""
-        SELECT * FROM "{table}"
-        WHERE CUST_CODE = "{customer}";""")
-    result = cursor.fetchall()
-    print(result)
-
-
-def date_query(
-    db,
-    table,
-    cursor,
-    connection,
-    date):
-
-    """
-    Carries out a simple date query
-    """
-
-    if len(date) == 1:
+    conjunction = ""
+    if len(queries) > 1:
+        conjunction = "AND"
+    print(queries)
+    try:
         cursor.execute(f"""
             SELECT * FROM "{table}"
-            WHERE SHOP_DATE = "{date[0]}";""")
+            WHERE {queries[0]}
+            {conjunction} {queries[1]};""")
 
-    if len(date) == 2:
-        cursor.execute(f"""
-            SELECT * FROM "{table}"
-            WHERE SHOP_DATE >= "{min(date)}" AND SHOP_DATE <= "{max(date)}";""")
-
-    if len(date) > 2:
-        print(f"\n!!! Please provide only two dates. Stopping.")
-        sys.exit(1)
-
-    result = cursor.fetchall()
-    print(result)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(f"!!! There was a problem: {e}")
+        csv2sql.examine_db(cursor, db)
 
 
 def main():
@@ -98,20 +113,23 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    db = args.db
-    table = args.table
-    customer = args.cust
-    date = args.date
+    if not os.path.exists(args.db):
+        print(f"!!! The database {args.db} doesn't seem to exist here.")
+        sys.exit(1)
 
     #~ connect!
-    connection, cursor = sqlite_connect(db)
+    connection, cursor = sqlite_connect(args.db)
 
-    if args.cust:
-        customer_query(db, table, cursor, connection, customer)
+    queries = query_builder(
+        date=args.date,
+        customer=args.cust)
 
-    if args.date:
-        date_query(db, table, cursor, connection, date)
-
+    query_runner(
+        args.db,
+        args.table,
+        cursor,
+        connection,
+        queries)
 
 
 if __name__ == "__main__":

@@ -133,3 +133,4 @@ dmypy.json
 .pyre/
 workspace.code-workspace
 sqlite_ops.py
+.vscode/settings.json
