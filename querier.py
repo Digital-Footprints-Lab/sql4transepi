@@ -88,15 +88,18 @@ def query_runner(
     connection,
     queries):
 
-    conjunction = ""
-    if len(queries) > 1:
-        conjunction = "AND"
-    print(queries)
+    if len(queries) == 1:
+        query_string = (queries[0])
+    else: #~ concatenate queries with "AND",
+        query_string = queries[0]
+        for query in queries[1:]:
+            query_string = (query_string + " AND " + query)
+    print(query_string)
+
     try:
         cursor.execute(f"""
             SELECT * FROM "{table}"
-            WHERE {queries[0]}
-            {conjunction} {queries[1]};""")
+            WHERE {query_string};""")
 
         result = cursor.fetchall()
         print(result)
