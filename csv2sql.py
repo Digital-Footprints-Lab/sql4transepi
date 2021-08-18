@@ -1,4 +1,6 @@
 import sys
+import os
+import re
 import argparse
 import csv
 import pandas as pd
@@ -36,10 +38,16 @@ def args_setup():
 
 def sqlite_connect(db):
 
-    #~ connect to our working DB
-    connection = sqlite3.connect(db)
-    #~ c is the cursor object: executes SQL on DB table
-    cursor = connection.cursor()
+    try:
+        if not os.path.exists(db):
+            print(f"{db} doesn't exist here: creating DB...")
+        connection = sqlite3.connect(db)
+        #~ c is the cursor object: executes SQL on DB table
+        cursor = connection.cursor()
+        print(f"Connected to DB '{db}'...")
+
+    except Exception as e:
+        print(f"\n!!! Problem connecting to DB: {e}")
 
     return connection, cursor
 
@@ -79,49 +87,10 @@ def csv_to_sqlite_table(
 
     else: #~ table exists, do an INSERT
         print(f"\nTable '{table}' exists, appending records...")
-        # try:                      #~ so create table from csv
-        #     pd.read_csv(csv).to_sql(
-        #         table,
-        #         connection,
-        #         if_exists="append",
-        #         index=False)
-        #     print(f"OK, append successful.")
-        # except Exception as e:
-        #     print(f"\n!!! {e} \n!!! {csv.name} not appended.")
-
         try:
             with open(csv_file.name, "r") as infile:
-    # csv.DictReader uses first line in file for column headings by default
-                dict_read = csv.DictReader(infile) # comma is default delimiter
-                to_db = [(
-                    i['SHOP_WEEK'],
-                    i['SHOP_DATE'],
-                    i['SHOP_WEEKDAY'],
-                    i['SHOP_HOUR'],
-                    i['QUANTITY'],
-                    i['SPEND'],
-                    i['PROD_CODE'],
-                    i['PROD_CODE_10'],
-                    i['PROD_CODE_20'],
-                    i['PROD_CODE_30'],
-                    i['PROD_CODE_40'],
-                    i['CUST_CODE'],
-                    i['CUST_PRICE_SENSITIVITY'],
-                    i['CUST_LIFESTAGE'],
-                    i['BASKET_ID'],
-                    i['BASKET_SIZE'],
-                    i['BASKET_PRICE_SENSITIVITY'],
-                    i['BASKET_TYPE'],
-                    i['BASKET_DOMINANT_MISSION'],
-                    i['STORE_CODE'],
-                    i['STORE_FORMAT'],
-                    i['STORE_REGION']) for i in dict_read]
-
-        # cur.executemany("INSERT INTO t (col1, col2) VALUES (?, ?);", to_db)
-            cursor.executemany(f"""
-                INSERT INTO {table}
-                (SHOP_WEEK,SHOP_DATE,SHOP_WEEKDAY,SHOP_HOUR,QUANTITY,SPEND,PROD_CODE,PROD_CODE_10,PROD_CODE_20,PROD_CODE_30,PROD_CODE_40,CUST_CODE,CUST_PRICE_SENSITIVITY,CUST_LIFESTAGE,BASKET_ID,BASKET_SIZE,BASKET_PRICE_SENSITIVITY,BASKET_TYPE,BASKET_DOMINANT_MISSION,STORE_CODE,STORE_FORMAT,STORE_REGION)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);""", [to_db])
+                print("fix me!")
+                pass #! fix me!
         except Exception as e:
             print(f"\n!!! {e} \n!!! {csv_file.name} not appended.")
     connection.commit()
@@ -155,62 +124,6 @@ def create_index(
         print("!!! Index creation failed", e)
 
 
-#! fix me
-# def append_csv_to_table(
-#     db,
-#     cursor,
-#     connection,
-#     csv,
-#     table):
-
-#     """
-#     Reads the incoming csv into a dataframe,
-#     then iterates through each row, appending the relevant fields.
-#     If there are duplicate on unique index column, skip and do nothing.
-
-#     ARGS: sqlite cursor + connection,
-#           input csv file to be added,
-#           name of the table to be added to
-
-#     RETS: nothing, commits changes to the SQLite DB.
-#     """
-
-#     print(f"\nAppending {csv.name} to table '{table}' in DB '{db}'...")
-
-#     #~ check if table actually exists
-#     try:
-#         cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
-#         tables = [x[0] for x in cursor.fetchall()]
-#         if not table in tables:
-#             print(f"\n!!! Table '{table}' doesn't exist in database '{db}'.")
-#             print(f"Remove the append flag to create a new table instead.")
-#             sys.exit(1)
-#     except Exception as e:
-#         print(e)
-
-#     incoming_df = pd.read_csv(csv)
-#     # try:
-#     for _, row in incoming_df.iterrows():
-#         cursor.execute(
-#             f"""INSERT INTO {table}
-#                 (productid, name, PDP_productPrice)
-#                 VALUES(
-#                 "{row["productid"]}",
-#                 "{row["name"]}",
-#                 "{row["PDP_productPrice"]}")
-#                 ON CONFLICT DO NOTHING;""")
-#     # pd.read_csv(csv).to_sql( #! pandas cannot check for dups
-#     #     table,
-#     #     connection,
-#     #     if_exists="append",
-#     #     index=False)
-#     # print(f"OK, append successful.")
-#     # except Exception as e:
-#     #     print(f"\n!!! {e} {csv.name} not appended.")
-
-#     connection.commit()
-
-
 def examine_db(cursor, db):
 
     """
@@ -240,8 +153,11 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if args.table.isnumeric(): #! this doesn't catch decimals
-        print("\n!!! Tables cannot be named as a number. Please retry.")
+    if not re.match("^[a-zA-Z0-9]+$", args.table):
+        print("\n!!! Tables names can only include standard characters. Please retry.")
+        sys.exit(1)
+    if args.table[0].isnumeric(): #! this doesn't catch decimals
+        print("\n!!! Tables names cannot start with a number. Please retry.")
         sys.exit(1)
 
     #~ connect!

@@ -6,6 +6,7 @@ import csv
 import pandas as pd
 import sqlite3
 
+#~ my local imports
 import csv2sql
 
 """Eventually, we might want to use
@@ -50,8 +51,12 @@ def sqlite_connect(db_name):
 def query_builder(
     date="",
     customer=""):
-    # since="", #! TO DO!
-    # until="",
+    #! TO DO! (?)
+    #! make this generalist:
+    #! 1.   make argparser take any field (will have to deal with multiples,
+    #!      for example with date ranges)
+    #! 2.   args will need field identified, and value identified.
+    #! 3.   or should that be a whole separate set of scripts?
 
     """
     Builds the SQL query statements from supplied args.
@@ -62,11 +67,11 @@ def query_builder(
             For customers, number(s), ID in format CUST0123456789
     """
 
-    queries_list = []
+    queries = []
 
     if customer: #~ construct the customer query SQL
         query_customer = f"""CUST_CODE = \"{customer}\""""
-        queries_list.append(query_customer)
+        queries.append(query_customer)
 
     if date: #~ construct the date query SQL
         if len(date) == 1:
@@ -76,9 +81,17 @@ def query_builder(
         if len(date) > 2:
             print(f"\n!!! Please provide only two dates.")
             sys.exit(1)
-        queries_list.append(query_date)
+        queries.append(query_date)
 
-    return queries_list
+    if len(queries) == 1:
+        query_string = (queries[0])
+    else: #~ concatenate multiple queries with "AND" between
+        query_string = queries[0]
+        for query in queries[1:]:
+            query_string = (query_string + " AND " + query)
+    # print(query_string)
+
+    return query_string
 
 
 def query_runner(
@@ -86,23 +99,25 @@ def query_runner(
     table,
     cursor,
     connection,
-    queries):
+    query_string):
 
-    if len(queries) == 1:
-        query_string = (queries[0])
-    else: #~ concatenate queries with "AND",
-        query_string = queries[0]
-        for query in queries[1:]:
-            query_string = (query_string + " AND " + query)
-    print(query_string)
+    """
+    Runs the query built by the query builder, straight outputs
+    the matches to the terminal for now.
+
+    ARGS:   SQL stuff (db, table, cursor, connection)
+            A string of SQL formatted queries/query, as made by
+            query_builder())
+    """
 
     try:
         cursor.execute(f"""
-            SELECT * FROM "{table}"
+            SELECT * FROM {table}
             WHERE {query_string};""")
 
         result = cursor.fetchall()
         print(result)
+
     except Exception as e:
         print(f"!!! There was a problem: {e}")
         csv2sql.examine_db(cursor, db)
@@ -123,7 +138,7 @@ def main():
     #~ connect!
     connection, cursor = sqlite_connect(args.db)
 
-    queries = query_builder(
+    query_string = query_builder(
         date=args.date,
         customer=args.cust)
 
@@ -132,7 +147,7 @@ def main():
         args.table,
         cursor,
         connection,
-        queries)
+        query_string)
 
 
 if __name__ == "__main__":
