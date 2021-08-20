@@ -9,6 +9,9 @@ import sqlite3
 #~ my local imports
 import csv2sql
 
+#! query on basket total / per customer / date
+
+#! query on what dates particular product codes / total counts summaries / per customer.
 """Eventually, we might want to use
 pypika SQL query builder package, although right now
 best leave the full-fledged packages alone
@@ -30,7 +33,7 @@ def args_setup():
         "--date", nargs="+", action="store",
         help="Shop date(range) to query, provide one or two dates. Format: YYYYMMDD")
     parser.add_argument(
-        "--cust", action="store",
+        "--cust", nargs="+", action="store",
         help="Customer code to query. Format: CUST0123456789")
 
     args = parser.parse_args()
@@ -51,12 +54,6 @@ def sqlite_connect(db_name):
 def query_builder(
     date="",
     customer=""):
-    #! TO DO! (?)
-    #! make this generalist:
-    #! 1.   make argparser take any field (will have to deal with multiples,
-    #!      for example with date ranges)
-    #! 2.   args will need field identified, and value identified.
-    #! 3.   or should that be a whole separate set of scripts?
 
     """
     Builds the SQL query statements from supplied args.
@@ -70,7 +67,10 @@ def query_builder(
     queries = []
 
     if customer: #~ construct the customer query SQL
-        query_customer = f"""CUST_CODE = \"{customer}\""""
+        query_customer = f"""CUST_CODE = \"{customer[0]}\""""
+        if len(customer) > 1:
+            for cust in customer[1:]:
+                query_customer = query_customer + f""" OR CUST_CODE = \"{cust}\""""
         queries.append(query_customer)
 
     if date: #~ construct the date query SQL
@@ -89,7 +89,6 @@ def query_builder(
         query_string = queries[0]
         for query in queries[1:]:
             query_string = (query_string + " AND " + query)
-    # print(query_string)
 
     return query_string
 
@@ -122,12 +121,11 @@ def query_runner(
         print(f"!!! There was a problem: {e}")
         csv2sql.examine_db(cursor, db)
 
-
 def main():
 
     parser, args = args_setup()
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 6:
         parser.print_help()
         sys.exit(1)
 

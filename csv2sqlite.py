@@ -12,14 +12,11 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="SQLite DB Importer and Updater",
-        epilog="Example: python csv2sql.py -i items.csv -d database1.db -t items")
+        epilog="Example: python csv2sql.py -i items.csv -d database1.db -t table")
     parser.add_argument(
         "-f", "--file", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
         help="CSV file to import.")
-    parser.add_argument( #! redundant
-        "-a", "--append", action="store_true",
-        help="Append to existing table.")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to work with.")
@@ -87,7 +84,11 @@ def csv_to_sqlite_table(
 
     if cursor.fetchone() == None: #~ table doesn't exit yet
         print(f"\nCreating new table '{table}' in DB '{db}'...")
-        try:                      #~ so create table from csv
+        try:
+            # cursor.execute(f"""
+            #     COPY {table} FROM '/Users/at9362/Code/sql4transepi/first100records.csv'
+            #     DELIMITER ','
+            #     CSV HEADER;""") #~ so create table from csv
             pd.read_csv(csv_file).to_sql(
                 table,
                 connection,
@@ -97,14 +98,25 @@ def csv_to_sqlite_table(
         except Exception as e:
             print(f"\n!!! {e} \n!!! {csv_file.name} not imported.")
 
-    else: #~ table exists, do an INSERT
-        print(f"\nTable '{table}' exists, appending records...")
-        try:
-            with open(csv_file.name, "r") as infile:
-                print("fix me!")
-                pass #! fix me!
-        except Exception as e:
-            print(f"\n!!! {e} \n!!! {csv_file.name} not appended.")
+    #! every solution to this seems to require listing all of the columns.
+    #! which is clearly ridiculous. leaving for now. the below is
+    #! import to temp table (dangerous anyway), then merge tables (not straightforward afaics)
+    #! why is this so difficult!?!?!!?
+    else: #~ table exists,
+        print(f"\nTable '{table}' exists, appending records... TODO")
+        # try:                 #~ put csv into temporary table
+        #     table_incoming = table + "_incoming"
+        #     pd.read_csv(csv_file).to_sql(
+        #     table_incoming,
+        #     connection,
+        #     if_exists="fail",
+        #     index=False)
+
+        #     with open(csv_file.name, "r") as infile:
+        #         print("fix me!")
+        #         pass #! fix me!
+        # except Exception as e:
+        #     print(f"\n!!! {e} \n!!! {csv_file.name} not appended.")
 
     connection.commit()
 
