@@ -10,8 +10,8 @@ import psycopg2
 def args_setup():
 
     parser = argparse.ArgumentParser(
-        description="SQLite DB Querier",
-        epilog="Example: python querier.py -d database1.db -c CUST001")
+        description="PostgreSQL DB Querier",
+        epilog="Example: python querier.py -d database1.db --cust CUST001")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to query.")
@@ -19,17 +19,24 @@ def args_setup():
         "-t", "--table", action="store", required=True,
         help="The name of the table to query.")
     parser.add_argument(
-        "--date", nargs="+", action="store",
-        help="Shop date(range) to query, provide one or two dates. Format: YYYYMMDD")
-    parser.add_argument(
-        "--cust", "--customer", nargs="+", action="store",
+        "--cust", "--customer", action="store",
         help="Customer code to query. Format: CUST0123456789")
+    parser.add_argument(
+        "--prod", "--product", action="store",
+        help="Product code to query. Format: PRD0123456")
+    parser.add_argument(
+        "--date", action="store",
+        help="Shop date to query. Format: YYYYMMDD")
+    parser.add_argument(
+        "--week", action="store",
+        help="Shop week (of year) to query. Format: YYYYNN")
+    parser.add_argument(
+        "--weekday", action="store",
+        help="Shop weekday (1-7) to query. Format: N")
 
     args = parser.parse_args()
 
     return parser, args
-
-
 
 #! query on basket total / per customer / date
 #! query on what dates particular product codes / total counts summaries / per customer.
@@ -57,12 +64,109 @@ def total_spend_by_customer_for_week(customer, week):
     #!
     #~ return!
 
-def all_customer_records(
-    db,
+
+def all_records_from_customer(
+    customer,
     table,
     cursor,
-    connection,
-    customer):
+    connection):
+
+    sql = f""" #! turn this to prepared statement!
+        SELECT * FROM {table}
+        WHERE CUST_CODE = '{customer}';"""
+
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_product(
+    product,
+    table,
+    cursor,
+    connection):
+
+    sql = f"""
+        SELECT * FROM {table}
+        WHERE PROD_CODE = '{product}';"""
+
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_date(
+    date,
+    table,
+    cursor,
+    connection):
+
+    sql = f"""
+        SELECT * FROM {table}
+        WHERE SHOP_DATE = '{date}';"""
+
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_week(
+    week,
+    table,
+    cursor,
+    connection):
+
+    sql = f"""
+        SELECT * FROM {table}
+        WHERE SHOP_WEEK = '{week}';"""
+
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_weekday(
+    weekday,
+    table,
+    cursor,
+    connection):
+
+    sql = f"""
+        SELECT * FROM {table}
+        WHERE SHOP_WEEKDAY = '{weekday}';"""
+
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def count_customer_records():
+    pass
+
+
+def count_product_records():
+    pass
+
+
+def count_date_records():
+    pass
+
+
 
 
 
@@ -72,17 +176,52 @@ def main():
 
     parser, args = args_setup()
 
-    if len(sys.argv) < 6:
-        parser.print_help()
-        sys.exit(1)
+    #~ the database can be made on the command line with
+    #~ createdb [dbname]
+    connection = psycopg2.connect(
+        database=args.db,
+        user="at9362",
+        password="password",
+        host="127.0.0.1",
+        port="5432")
 
-    if not os.path.exists(args.db):
-        print(f"!!! The database {args.db} doesn't seem to exist here.")
-        sys.exit(1)
+    #~ Create a cursor object using the cursor() method
+    cursor = connection.cursor()
 
-    #~ connect!
-    connection, cursor = sqlite_connect(args.db)
+    if args.cust:
+        all_records_from_customer(
+            args.cust,
+            args.table,
+            cursor,
+            connection)
 
+    if args.prod:
+        all_records_from_product(
+            args.prod,
+            args.table,
+            cursor,
+            connection)
+
+    if args.date:
+        all_records_from_date(
+            args.date,
+            args.table,
+            cursor,
+            connection)
+
+    if args.week:
+        all_records_from_week(
+            args.week,
+            args.table,
+            cursor,
+            connection)
+
+    if args.weekday:
+        all_records_from_weekday(
+            args.weekday,
+            args.table,
+            cursor,
+            connection)
 
 
 

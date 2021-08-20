@@ -85,7 +85,7 @@ def csv_to_sqlite_table(
     if cursor.fetchone() == None: #~ table doesn't exit yet
         print(f"\nCreating new table '{table}' in DB '{db}'...")
         try:
-            # cursor.execute(f"""
+            # cursor.execute(f""" #! COPY is not a valid SQLite command!! ffs.
             #     COPY {table} FROM '/Users/at9362/Code/sql4transepi/first100records.csv'
             #     DELIMITER ','
             #     CSV HEADER;""") #~ so create table from csv
