@@ -145,8 +145,8 @@ def all_records_from_weekday(
 
 #~ CUSTOMER queries =========================
 def customer_records_from_date(
-    date,
     customer,
+    date,
     table,
     cursor,
     connection):
@@ -157,7 +157,7 @@ def customer_records_from_date(
         AND CUST_CODE = '$customer';""")
 
     try:
-        cursor.execute(sql.substitute(table=table, date=date, customer=customer))
+        cursor.execute(sql.substitute(table=table, customer=customer, date=date))
         result = cursor.fetchall()
         print(result)
     except Exception as e:
@@ -350,10 +350,10 @@ def main():
         sys.exit(0)
 
 #~ two args ==========================
-    if args.date and args.cust:
+    if args.cust and args.date:
         customer_records_from_date(
-            args.date,
             args.cust,
+            args.date,
             args.table,
             cursor,
             connection)
