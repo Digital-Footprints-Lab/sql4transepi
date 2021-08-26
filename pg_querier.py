@@ -45,7 +45,6 @@ def args_setup():
 
     return parser, args
 
-#! query on basket total / per customer / date
 #! query on what dates particular product codes / total counts summaries / per customer.
 #! date summary
 #! week summary
@@ -53,7 +52,7 @@ def args_setup():
 #! customer summary
 #! combined time + cust
 #! product summaries
-#! port to prepared statements
+
 
 def all_records_from_customer(
     customer,
@@ -144,8 +143,8 @@ def all_records_from_weekday(
     except Exception as e:
         print(e)
 
-
-def all_records_from_date_and_cust(
+#~ CUSTOMER queries =========================
+def customer_records_from_date(
     date,
     customer,
     table,
@@ -165,6 +164,47 @@ def all_records_from_date_and_cust(
         print(e)
 
 
+def customer_records_from_week(
+    customer,
+    week,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT * FROM $table
+        WHERE CUST_CODE = '$customer'
+        AND SHOP_WEEK = '$week';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, customer=customer, week=week))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_from_weekday(
+    customer,
+    weekday,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT * FROM $table
+        WHERE CUST_CODE = '$customer'
+        AND SHOP_WEEKDAY = '$weekday';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, customer=customer, weekday=weekday))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+#~ SPEND QUERIES ===========================
 def total_spend_by_customer(
     customer,
     table,
@@ -183,7 +223,7 @@ def total_spend_by_customer(
         print(e)
 
 
-def total_spend_by_customer_on_date(
+def spend_by_customer_on_date(
     customer,
     date,
     table,
@@ -203,7 +243,7 @@ def total_spend_by_customer_on_date(
         print(e)
 
 
-def total_spend_by_customer_on_week(
+def spend_by_customer_on_week(
     customer,
     week,
     table,
@@ -223,7 +263,7 @@ def total_spend_by_customer_on_week(
         print(e)
 
 
-def total_spend_by_customer_on_weekday(
+def spend_by_customer_on_weekday(
     customer,
     weekday,
     table,
@@ -242,7 +282,7 @@ def total_spend_by_customer_on_weekday(
     except Exception as e:
         print(e)
 
-
+#~ ==================================
 def count_customer_records():
     pass
 
@@ -278,8 +318,9 @@ def main():
 
 #~ I know this is kinda crazy - will make an arg handler later :)
 
+#~ three args =======================
     if args.cust and args.date and args.spend:
-        total_spend_by_customer_on_date(
+        spend_by_customer_on_date(
             args.cust,
             args.date,
             args.table,
@@ -289,7 +330,7 @@ def main():
         sys.exit(0)
 
     if args.cust and args.week and args.spend:
-        total_spend_by_customer_on_week(
+        spend_by_customer_on_week(
             args.cust,
             args.week,
             args.table,
@@ -299,7 +340,7 @@ def main():
         sys.exit(0)
 
     if args.cust and args.weekday and args.spend:
-        total_spend_by_customer_on_weekday(
+        spend_by_customer_on_weekday(
             args.cust,
             args.weekday,
             args.table,
@@ -308,8 +349,9 @@ def main():
         connection.close()
         sys.exit(0)
 
+#~ two args ==========================
     if args.date and args.cust:
-        all_records_from_date_and_cust(
+        customer_records_from_date(
             args.date,
             args.cust,
             args.table,
@@ -318,6 +360,27 @@ def main():
         connection.close()
         sys.exit(0)
 
+    if args.cust and args.week:
+        customer_records_from_week(
+            args.cust,
+            args.week,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        sys.exit(0)
+
+    if args.cust and args.weekday:
+        customer_records_from_weekday(
+            args.cust,
+            args.weekday,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        sys.exit(0)
+
+#~ one arg ===========================
     if args.cust:
         all_records_from_customer(
             args.cust,
@@ -357,15 +420,6 @@ def main():
     if args.weekday:
         all_records_from_weekday(
             args.weekday,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        sys.exit(0)
-
-    if args.spendcust:
-        total_spend_by_customer(
-            args.spendcust,
             args.table,
             cursor,
             connection)
