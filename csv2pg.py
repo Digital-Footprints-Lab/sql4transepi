@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import argparse
+from string import Template
 import csv
 import pandas as pd
 import psycopg2
@@ -31,13 +32,13 @@ def args_setup():
 
 def create_table(table, connection, cursor):
 
-    sql = f"""CREATE TABLE IF NOT EXISTS {table} (
+    sql = Template("""CREATE TABLE IF NOT EXISTS $table (
         SHOP_WEEK INT,
         SHOP_DATE INT,
         SHOP_WEEKDAY INT,
         SHOP_HOUR INT,
         QUANTITY INT,
-        SPEND REAL,
+        SPEND MONEY,
         PROD_CODE VARCHAR,
         PROD_CODE_10 VARCHAR,
         PROD_CODE_20 VARCHAR,
@@ -53,10 +54,10 @@ def create_table(table, connection, cursor):
         BASKET_DOMINANT_MISSION TEXT,
         STORE_CODE VARCHAR,
         STORE_FORMAT VARCHAR,
-        STORE_REGION VARCHAR);"""
+        STORE_REGION VARCHAR);""")
 
     try:
-        cursor.execute(sql)
+        cursor.execute(sql.substitute(table=table))
         connection.commit()
     except Exception as e:
         print(e)
@@ -71,7 +72,7 @@ def import_csv_to_pg_table(
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
 
-    sql = f"""COPY {table} (
+    sql = Template("""COPY $table (
         SHOP_WEEK,
         SHOP_DATE,
         SHOP_WEEKDAY,
@@ -94,11 +95,12 @@ def import_csv_to_pg_table(
         STORE_CODE,
         STORE_FORMAT,
         STORE_REGION)
-        FROM '{csv_path}' CSV HEADER;"""
+        FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql)
+        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
         connection.commit()
+        print(f"OK, {csv.name} imported.")
     except Exception as e:
         print(e)
 
@@ -109,16 +111,20 @@ def main():
 
     #~ the database can be made on the command line with
     #~ createdb [dbname]
-    connection = psycopg2.connect(
-    database=args.db,
-    user="at9362",
-    password="password",
-    host="127.0.0.1",
-    port="5432")
-
+    try:
+        connection = psycopg2.connect(
+            database=args.db,
+            user="at9362",
+            password="password",
+            host="127.0.0.1",
+            port="5432")
+    except psycopg2.OperationalError as e:
+        print(f"The database {args.db} does not exist yet.")
+        print(f"You can create the DB on the command line with:")
+        print(f"\ncreatedb {args.db}")
+        sys.exit(1)
     #~ Create a cursor object using the cursor() method
     cursor = connection.cursor()
-
 
     create_table(
         args.table,
@@ -131,7 +137,6 @@ def main():
         connection,
         cursor)
 
-    #~ Close the connection
     connection.close()
 
 
