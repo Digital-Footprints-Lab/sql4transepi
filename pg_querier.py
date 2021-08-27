@@ -35,24 +35,25 @@ def args_setup():
         "--weekday", action="store",
         help="Shop weekday (1-7) to query. Format: N")
     parser.add_argument(
+        "--basket", action="store",
+        help="Basket ID. Format: 123450123456789")
+    parser.add_argument(
         "--spend", action="store_true",
         help="Total spend for customer, all time.")
-    parser.add_argument(
-        "--datecust", action="store",
-        help="Results from a single customer on a single date.")
+    # parser.add_argument(
+    #     "--datecust", action="store",
+    #     help="Results from a single customer on a single date.")
 
     args = parser.parse_args()
 
     return parser, args
 
-#! query on what dates particular product codes / total counts summaries / per customer.
 #! date summary
 #! week summary
 #! basket summary
 #! customer summary
 #! combined time + cust
 #! product summaries
-
 
 def all_records_from_customer(
     customer,
@@ -143,6 +144,7 @@ def all_records_from_weekday(
     except Exception as e:
         print(e)
 
+
 #~ CUSTOMER queries =========================
 def customer_records_from_date(
     customer,
@@ -204,8 +206,45 @@ def customer_records_from_weekday(
         print(e)
 
 
+#~ BASKET QUERIES ==========================
+def basket_all_records(
+    basket,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT * FROM $table
+        WHERE BASKET_ID = '$basket';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, basket=basket))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
+def basket_spend(
+    basket,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT SUM(SPEND) FROM $table
+        WHERE BASKET_ID = '$basket';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, basket=basket))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+
 #~ SPEND QUERIES ===========================
-def total_spend_by_customer(
+def spend_by_customer_total(
     customer,
     table,
     cursor,
@@ -282,6 +321,7 @@ def spend_by_customer_on_weekday(
     except Exception as e:
         print(e)
 
+
 #~ ==================================
 def count_customer_records():
     pass
@@ -295,12 +335,12 @@ def count_date_records():
     pass
 
 
+#~ main =================================
 def main():
 
     parser, args = args_setup()
 
-    #~ the database can be made on the command line with
-    #~ createdb [dbname]
+    #~ connect to pgsql - if no DB, see exception.
     try:
         connection = psycopg2.connect(
             database=args.db,
@@ -313,11 +353,9 @@ def main():
         print(f"See the script csv2pg.py if you would like to create one from a CSV file.")
         sys.exit(1)
 
-    #~ Create a cursor object using the cursor() method
     cursor = connection.cursor()
 
 #~ I know this is kinda crazy - will make an arg handler later :)
-
 #~ three args =======================
     if args.cust and args.date and args.spend:
         spend_by_customer_on_date(
@@ -327,7 +365,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.cust and args.week and args.spend:
         spend_by_customer_on_week(
@@ -337,7 +375,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.cust and args.weekday and args.spend:
         spend_by_customer_on_weekday(
@@ -347,7 +385,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
 #~ two args ==========================
     if args.cust and args.date:
@@ -358,7 +396,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.cust and args.week:
         customer_records_from_week(
@@ -368,7 +406,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.cust and args.weekday:
         customer_records_from_weekday(
@@ -378,7 +416,25 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
+
+    if args.basket and args.spend:
+        basket_spend(
+            args.basket,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        return
+
+    if args.cust and args.spend:
+        spend_by_customer_total(
+            args.cust,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        return
 
 #~ one arg ===========================
     if args.cust:
@@ -388,7 +444,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.prod:
         all_records_from_product(
@@ -397,7 +453,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.date:
         all_records_from_date(
@@ -406,7 +462,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.week:
         all_records_from_week(
@@ -415,7 +471,7 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
 
     if args.weekday:
         all_records_from_weekday(
@@ -424,7 +480,16 @@ def main():
             cursor,
             connection)
         connection.close()
-        sys.exit(0)
+        return
+
+    if args.basket:
+        basket_all_records(
+            args.basket,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        return
 
 
 if __name__ == "__main__":
