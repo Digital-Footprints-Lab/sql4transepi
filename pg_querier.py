@@ -12,7 +12,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier",
-        epilog="Example: python querier.py -d database1.db --cust CUST001")
+        epilog="Example: python pg_querier.py -d database1.db -t table1 --cust CUST001")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to query.")
@@ -25,6 +25,9 @@ def args_setup():
     parser.add_argument(
         "--prod", "--product", action="store",
         help="Product code to query. Format: PRD0123456")
+    parser.add_argument(
+        "--hour", action="store",
+        help="Shop hour to query (24 hour, 2 digits). Format: HH")
     parser.add_argument(
         "--date", action="store",
         help="Shop date to query. Format: YYYYMMDD")
@@ -40,14 +43,12 @@ def args_setup():
     parser.add_argument(
         "--spend", action="store_true",
         help="Total spend for customer, all time.")
-    # parser.add_argument(
-    #     "--datecust", action="store",
-    #     help="Results from a single customer on a single date.")
 
     args = parser.parse_args()
 
     return parser, args
 
+#! does spend take into account quantity?
 #! date summary
 #! week summary
 #! basket summary
@@ -85,6 +86,24 @@ def all_records_from_product(
 
     try:
         cursor.execute(sql.substitute(table=table, product=product))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
+#~ time queries =========================================
+def all_records_from_hour(
+    hour,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT * FROM $table
+        WHERE SHOP_HOUR = '$hour';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, hour=hour))
         result = cursor.fetchall()
         print(result)
     except Exception as e:
@@ -449,6 +468,15 @@ def main():
     if args.prod:
         all_records_from_product(
             args.prod,
+            args.table,
+            cursor,
+            connection)
+        connection.close()
+        return
+
+    if args.hour:
+        all_records_from_hour(
+            args.hour,
             args.table,
             cursor,
             connection)
