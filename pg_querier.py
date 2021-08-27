@@ -56,23 +56,6 @@ def args_setup():
 #! combined time + cust
 #! product summaries
 
-def all_records_from_customer(
-    customer,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT * FROM $table
-        WHERE CUST_CODE = '$customer';""")
-
-    try:
-        cursor.execute(sql.substitute(table=table, customer=customer))
-        result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
 
 def all_records_from_product(
     product,
@@ -165,6 +148,23 @@ def all_records_from_weekday(
 
 
 #~ CUSTOMER queries =========================
+def customer_records_all(
+    customer,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT * FROM $table
+        WHERE CUST_CODE = '$customer';""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, customer=customer))
+        result = cursor.fetchall()
+        print(result)
+    except Exception as e:
+        print(e)
+
 def customer_records_from_date(
     customer,
     date,
@@ -457,7 +457,7 @@ def main():
 
 #~ one arg ===========================
     if args.cust:
-        all_records_from_customer(
+        customer_records_all(
             args.cust,
             args.table,
             cursor,
