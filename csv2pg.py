@@ -32,6 +32,9 @@ def args_setup():
 
 def create_table(table, connection, cursor):
 
+    """Create a table consistent with the column names
+    for the CSVs in the Dunn Hunby Tesco example datasets"""
+
     sql = Template("""CREATE TABLE IF NOT EXISTS $table (
         SHOP_WEEK INT,
         SHOP_DATE INT,
@@ -68,6 +71,9 @@ def import_csv_to_pg_table(
     table,
     connection,
     cursor):
+
+    """Imports a CSV with columns named from the Dunn Hunby
+    Tesco example datasets"""
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
