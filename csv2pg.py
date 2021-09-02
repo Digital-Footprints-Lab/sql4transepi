@@ -35,7 +35,8 @@ def create_table(table, connection, cursor):
     """Create a table consistent with the column names
     for the CSVs in the Dunn Hunby Tesco example datasets"""
 
-    sql = Template("""CREATE TABLE IF NOT EXISTS $table (
+    sql = Template("""
+        CREATE TABLE IF NOT EXISTS $table (
         SHOP_WEEK INT,
         SHOP_DATE INT,
         SHOP_WEEKDAY INT,
@@ -67,6 +68,7 @@ def create_table(table, connection, cursor):
 
 
 def import_csv_to_pg_table(
+    db,
     csv,
     table,
     connection,
@@ -74,6 +76,8 @@ def import_csv_to_pg_table(
 
     """Imports a CSV with columns named from the Dunn Hunby
     Tesco example datasets"""
+
+    print(f"Importing {csv} to Postgres DB {db} table {table}, just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -115,8 +119,7 @@ def main():
 
     parser, args = args_setup()
 
-    #~ the database can be made on the command line with
-    #~ createdb [dbname]
+    #~ Create connection using psycopg2
     try:
         connection = psycopg2.connect(
             database=args.db,
@@ -125,11 +128,17 @@ def main():
             host="127.0.0.1",
             port="5432")
     except psycopg2.OperationalError as e:
-        print(f"The database {args.db} does not exist yet.")
-        print(f"You can create the DB on the command line with:")
-        print(f"\ncreatedb {args.db}")
+        print(f"\n!!! The database {args.db} does not seem to exist yet.")
+        print(f"With psql installed, you can create the DB on the command line with:")
+        print(f"createdb {args.db}")
         sys.exit(1)
-    #~ Create a cursor object using the cursor() method
+
+    #~ Check for disallowed characters in table name
+    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9]+$", args.table):
+        print("\n!!! Table names cannot start with a number, or include non-standard characters. Please retry.")
+        sys.exit(1)
+
+    #~ Create a cursor object
     cursor = connection.cursor()
 
     create_table(
@@ -138,6 +147,7 @@ def main():
         cursor)
 
     import_csv_to_pg_table(
+        args.db,
         args.file,
         args.table,
         connection,

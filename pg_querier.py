@@ -16,10 +16,7 @@ def args_setup():
         epilog="Example: python pg_querier.py -d database1.db -t table1 --cust CUST001")
     parser.add_argument(
         "--details", action="store_true",
-        help="Provide more details information on DB interactions and outputs.")
-    parser.add_argument(
-        "-c", "--count", action="store_true",
-        help="Provide total record counts rather than actual record output.")
+        help="Provide DB and table information.")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to query.")
@@ -48,8 +45,11 @@ def args_setup():
         "--basket", action="store",
         help="Basket ID. Format: 123450123456789")
     parser.add_argument(
-        "--spend", action="store_true",
-        help="Total spend for customer, all time.")
+        "-c", "--count", action="store_true",
+        help="Return total record counts rather than raw record output.")
+    parser.add_argument(
+        "-s", "--spend", action="store_true",
+        help="Return total spend for the query.")
 
     args = parser.parse_args()
 
@@ -70,6 +70,19 @@ def signal_handler(sig, frame):
     sys.exit(1)
 
 
+def output_type(record_type, result):
+
+    """Handles the type of record we want outputted,
+    for example for standard queries we might want raw records.
+    A count instead, we might want an integer."""
+
+    if record_type == "*":
+        print(result)
+    else:
+        print(result[0][0])
+
+
+#~ QUERIES FUNCTIONS start =======================
 def all_records_from_product(
     product,
     record_type,
@@ -84,11 +97,11 @@ def all_records_from_product(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, product=product))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
-#~ time queries =========================================
+
 def all_records_from_hour(
     hour,
     record_type,
@@ -103,7 +116,7 @@ def all_records_from_hour(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, hour=hour))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -122,7 +135,7 @@ def all_records_from_date(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, date=date))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -141,7 +154,7 @@ def all_records_from_week(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, week=week))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -160,10 +173,9 @@ def all_records_from_weekday(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, weekday=weekday))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
-
 
 #~ CUSTOMER queries =========================
 def customer_records_all(
@@ -180,7 +192,7 @@ def customer_records_all(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -201,7 +213,7 @@ def customer_records_from_date(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -222,7 +234,7 @@ def customer_records_from_week(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, week=week))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -243,7 +255,77 @@ def customer_records_from_weekday(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, weekday=weekday))
         result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+#~ CUSTOMER RECORDS TEMPORALLY WITH PRODUCT ======
+def customer_records_for_product_from_date(
+    customer,
+    date,
+    product,
+    record_type,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT $record_type FROM $table
+        WHERE CUST_CODE = '$customer'
+        AND SHOP_DATE = '$date'
+        AND PROD_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date, product=product))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_for_product_from_week(
+    customer,
+    week,
+    product,
+    record_type,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT $record_type FROM $table
+        WHERE CUST_CODE = '$customer'
+        AND SHOP_WEEK = '$week'
+        AND PROD_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, week=week, product=product))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_for_product_from_weekday(
+    customer,
+    weekday,
+    product,
+    record_type,
+    table,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT $record_type FROM $table
+        WHERE CUST_CODE = '$customer'
+        AND SHOP_WEEKDAY = '$weekday'
+        AND PROD_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, weekday=weekday, product=product))
+        result = cursor.fetchall()
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -263,111 +345,7 @@ def basket_all_records(
     try:
         cursor.execute(sql.substitute(record_type=record_type, table=table, basket=basket))
         result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
-
-def basket_spend(
-    basket,
-    record_type,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT SUM(SPEND) FROM $table
-        WHERE BASKET_ID = '$basket';""")
-
-    try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, basket=basket))
-        result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
-
-#~ SPEND QUERIES ===========================
-#~ the SPEND column is already (product price * QUANTITY)
-#~ (individual product price is NOT a column)
-def spend_by_customer_total(
-    customer,
-    record_type,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT SUM(SPEND) FROM $table
-        WHERE CUST_CODE = '$customer';""")
-
-    try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer))
-        result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
-
-def spend_by_customer_on_date(
-    customer,
-    date,
-    record_type,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT SUM(SPEND) FROM $table
-        WHERE CUST_CODE = '$customer'
-        AND SHOP_DATE = '$date';""")
-
-    try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date))
-        result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
-
-def spend_by_customer_on_week(
-    customer,
-    week,
-    record_type,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT SUM(SPEND) FROM $table
-        WHERE CUST_CODE = '$customer'
-        AND SHOP_WEEK = '$week';""")
-
-    try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, week=week))
-        result = cursor.fetchall()
-        print(result)
-    except Exception as e:
-        print(e)
-
-
-def spend_by_customer_on_weekday(
-    customer,
-    weekday,
-    record_type,
-    table,
-    cursor,
-    connection):
-
-    sql = Template("""
-        SELECT SUM(SPEND) FROM $table
-        WHERE CUST_CODE = '$customer'
-        AND SHOP_WEEKDAY = '$weekday';""")
-
-    try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, weekday=weekday))
-        result = cursor.fetchall()
-        print(result)
+        output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -378,6 +356,9 @@ def db_details(
     table,
     cursor,
     connection):
+
+    """Return some information about the current state of Postgres.
+    """
 
     sql_record_count = Template("""
         SELECT COUNT(*)
@@ -404,6 +385,7 @@ def db_details(
         basket_count = cursor.fetchall()
         cursor.execute(sql_date_count.substitute(table=table))
         date_count = cursor.fetchall()
+        print(f"DB connection details:\n", connection.get_dsn_parameters())
         print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
         print(f"Columns:     {column_count[0][0]}")
         print(f"Customers:   {cust_count[0][0]}")
@@ -416,8 +398,10 @@ def db_details(
 #~ main =================================
 def main():
 
-    # signal.signal(signal.SIGINT, signal_handler)
-    # parser, args = args_setup()
+    if len(sys.argv) == 5:
+        parser.print_help(sys.stderr)
+        print(f"\n!!! You didn't provide a query - see above for help.")
+        sys.exit(1)
 
     #~ connect to pgsql - if no DB, see exception.
     try:
@@ -429,30 +413,42 @@ def main():
             port="5432")
         cursor = connection.cursor()
     except psycopg2.OperationalError as e:
-        print(f"The database {args.db} doesn't seem to exist.")
+        print(f"\n!!! The database {args.db} doesn't seem to exist.")
         print(f"See the script csv2pg.py if you would like to create one from a CSV file.")
         sys.exit(1)
 
+    #~ check table exists
+    cursor.execute(f"""
+        SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
+    if not cursor.fetchone()[0]:
+        print(f"\n!!! {args.table} doesn't exist in {args.db}. If you need to import to table, see the script csv2pg.py.")
+        sys.exit(1)
+
     if args.details:
-        print(f"DB connection details:\n", connection.get_dsn_parameters())
         db_details(
             args.db,
             args.table,
             cursor,
             connection)
+        sys.exit(0)
 
-    #~ if args.count is not included, SELECTs will be for records,
-    #~ flip this to COUNT if we only want counts.
+    #~ if args.count is not included, SELECTs will be for all records,
+    #~ flip this to COUNT or SPEND if args request
     record_type = "*"
+    if args.count and args.spend:
+        print(f"\n!!! Please provide just one record type (spend / count / etc).")
+        sys.exit(1)
     if args.count:
         record_type = "COUNT(*)"
+    if args.spend:
+        record_type = "SUM(SPEND)"
 
-#~ I know this is kinda crazy - will make an arg handler later :)
-#~ three args =======================
-    if args.cust and args.date and args.spend:
-        spend_by_customer_on_date(
+#~ three args ========================
+    if args.cust and args.date and args.prod:
+        customer_records_for_product_from_date(
             args.cust,
             args.date,
+            args.prod,
             record_type,
             args.table,
             cursor,
@@ -460,10 +456,11 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.week and args.spend:
-        spend_by_customer_on_week(
+    if args.cust and args.week and args.prod:
+        customer_records_for_product_from_week(
             args.cust,
             args.week,
+            args.prod,
             record_type,
             args.table,
             cursor,
@@ -471,10 +468,11 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.weekday and args.spend:
-        spend_by_customer_on_weekday(
+    if args.cust and args.weekday and args.prod:
+        customer_records_for_product_from_weekday(
             args.cust,
             args.weekday,
+            args.prod,
             record_type,
             args.table,
             cursor,
@@ -509,26 +507,6 @@ def main():
         customer_records_from_weekday(
             args.cust,
             args.weekday,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
-
-    if args.basket and args.spend:
-        basket_spend(
-            args.basket,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
-
-    if args.cust and args.spend:
-        spend_by_customer_total(
-            args.cust,
             record_type,
             args.table,
             cursor,
