@@ -13,7 +13,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer and Updater",
-        epilog="Example: python csv2sql.py -i items.csv -d database1.db -t table")
+        epilog="Example: python csv2sql.py -d database1 -t table1 -f items.csv")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to work with.")
@@ -178,7 +178,7 @@ def main():
 
     #~ Check for disallowed characters in table name
     if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include symbols except_underscores. Please retry.")
+        print("\n!!! Table names cannot start with a number, or include symbols except_underscores.")
         sys.exit(1)
 
     #~ Create a cursor object

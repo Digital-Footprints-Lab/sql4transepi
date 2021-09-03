@@ -414,7 +414,7 @@ def main():
         cursor = connection.cursor()
     except psycopg2.OperationalError as e:
         print(f"\n!!! The database '{args.db}' doesn't seem to exist.")
-        print(f"If you would like to create a table from a CSV file see the script csv2pg.py")
+        print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
         print(f"\nTo get help: python3 pg_querier.py --help")
         sys.exit(1)
 
