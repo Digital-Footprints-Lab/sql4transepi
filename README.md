@@ -12,11 +12,11 @@ These are designed for querying databases of products and transactions for trans
 
 1. Install Postgres for the command line. You can follow a [guide](https://www.postgresqltutorial.com/install-postgresql/) here. 
 
-2. Have Python >= 3.8 installed, and import the `requirements.txt` file to acquire the dependencies
+2. Have Python >= 3.8 installed, and install the `requirements.txt` file to acquire the dependencies
 
 `pip install -r requirements.txt`
 
-You will now be ready to use the scripts here.
+You will now be ready to use these scripts.
 
 ### csv2pg.py
 
