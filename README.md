@@ -54,3 +54,6 @@ The available queries will be listed on an error, or you can run `python3 pg_que
   --spend               Return total spend for the query.
 
 Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend
+```
+
+The above example is asking for the total spend from customer identified as `CUST001` on the 21st of June 2018. Without the flag `--spend`, raw records will be output, which can then be piped into other commands, or saved into a file.
