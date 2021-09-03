@@ -77,7 +77,7 @@ def import_csv_to_pg_table(
     """Imports a CSV with columns named from the Dunn Hunby
     Tesco example datasets"""
 
-    print(f"Importing {csv} to Postgres DB {db} table {table}, just a moment...")
+    print(f"Importing {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -110,7 +110,50 @@ def import_csv_to_pg_table(
     try:
         cursor.execute(sql.substitute(table=table, csv_path=csv_path))
         connection.commit()
-        print(f"OK, {csv.name} imported.")
+        print(f"\nOK, {csv.name} imported.")
+    except Exception as e:
+        print(e)
+
+
+def db_details(
+    db,
+    table,
+    cursor,
+    connection):
+
+    """Return some information about the current state of Postgres.
+    """
+
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+    sql_column_count = Template("""
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_name='$table';""")
+    sql_cust_count = Template("""
+        SELECT COUNT (DISTINCT CUST_CODE) FROM $table;""")
+    sql_basket_count = Template("""
+        SELECT COUNT (DISTINCT BASKET_ID) FROM $table;""")
+    sql_date_count = Template("""
+        SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
+
+    try:
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table=table))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_cust_count.substitute(table=table))
+        cust_count = cursor.fetchall()
+        cursor.execute(sql_basket_count.substitute(table=table))
+        basket_count = cursor.fetchall()
+        cursor.execute(sql_date_count.substitute(table=table))
+        date_count = cursor.fetchall()
+        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
+        print(f"Columns:     {column_count[0][0]}")
+        print(f"Customers:   {cust_count[0][0]}")
+        print(f"Baskets:     {basket_count[0][0]}")
+        print(f"Shop dates:  {date_count[0][0]}")
     except Exception as e:
         print(e)
 
@@ -152,6 +195,12 @@ def main():
         args.table,
         connection,
         cursor)
+
+    db_details(
+            args.db,
+            args.table,
+            cursor,
+            connection)
 
     connection.close()
 
