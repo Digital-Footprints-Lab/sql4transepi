@@ -24,10 +24,33 @@ This imports a Comma Separated Values file to a Postgres table. You will first n
 
 `createdb database_5`
 
-Now that a databse is created, we can bring the CSV file into a table. Run the Python script declaring the recieving DB and giving a name to your table, for example
+Now that a database is created, we can bring the CSV file into a table. Run the Python script declaring the recieving DB and giving a name to your table, for example
 
 `python3 csv2pg.py -d database_5 -t table_1 -f records.csv`
 
 `-d` is the flag prior to your DB name, `-t` for table name, and `-f` will be the path to your incoming CSV file (usually just the name of the file, if the file is in the working folder). After import, the script will give you some summary details of what the table now contains.
 
 ### pg_querier.py
+
+pg_querier.py runs user-defined queries against a database, and can return raw records or summaries in the form of counts, totals and averages. The syntax for using the querier is
+
+`python3 pg_querier.py -d [your DB name] -t [your table name] [your queries as flags]`
+
+The available queries will be listed on an error, or you can run `python3 pg_querier --help`
+
+```  -h, --help            show this help message and exit
+  --details             Provide DB and table information.
+  -d DB, --db DB        The name of the DB to query.
+  -t TABLE, --table TABLE
+                        The name of the table to query.
+  --customer CUSTOMER   Customer code to query. Format: CUST0123456789
+  --product PRODUCT     Product code to query. Format: PRD0123456
+  --hour HOUR           Shop hour to query (24 hour, 2 digits). Format: HH
+  --date DATE           Shop date to query. Format: YYYYMMDD
+  --week WEEK           Shop week (of year) to query. Format: YYYYNN
+  --weekday WEEKDAY     Shop weekday (1-7) to query. Format: N
+  --basket BASKET       Basket ID. Format: 123450123456789
+  --count               Return total record counts.
+  --spend               Return total spend for the query.
+
+Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend```
