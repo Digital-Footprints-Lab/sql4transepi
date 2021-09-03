@@ -53,4 +53,4 @@ The available queries will be listed on an error, or you can run `python3 pg_que
   --count               Return total record counts.
   --spend               Return total spend for the query.
 
-Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend```
+Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend
