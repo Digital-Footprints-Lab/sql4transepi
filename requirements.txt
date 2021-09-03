@@ -1,0 +1,4 @@
+pandas
+pip-chill
+psycopg2-binary
+pylint

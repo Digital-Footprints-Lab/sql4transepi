@@ -177,8 +177,8 @@ def main():
         sys.exit(1)
 
     #~ Check for disallowed characters in table name
-    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include non-standard characters. Please retry.")
+    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
+        print("\n!!! Table names cannot start with a number, or include symbols except_underscores. Please retry.")
         sys.exit(1)
 
     #~ Create a cursor object
