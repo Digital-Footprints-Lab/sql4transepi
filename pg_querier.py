@@ -13,21 +13,21 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier",
-        epilog="Example: python pg_querier.py -d database1.db -t table1 --cust CUST001")
+        epilog="Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
     parser.add_argument(
-        "-d", "--db", action="store", required=True,
+        "-d", "--db", action="store",
         help="The name of the DB to query.")
     parser.add_argument(
-        "-t", "--table", action="store", required=True,
+        "-t", "--table", action="store",
         help="The name of the table to query.")
     parser.add_argument(
-        "--cust", "--customer", action="store",
+        "--customer", action="store",
         help="Customer code to query. Format: CUST0123456789")
     parser.add_argument(
-        "--prod", "--product", action="store",
+        "--product", action="store",
         help="Product code to query. Format: PRD0123456")
     parser.add_argument(
         "--hour", action="store",
@@ -45,10 +45,10 @@ def args_setup():
         "--basket", action="store",
         help="Basket ID. Format: 123450123456789")
     parser.add_argument(
-        "-c", "--count", action="store_true",
-        help="Return total record counts rather than raw record output.")
+        "--count", action="store_true",
+        help="Return total record counts.")
     parser.add_argument(
-        "-s", "--spend", action="store_true",
+        "--spend", action="store_true",
         help="Return total spend for the query.")
 
     args = parser.parse_args()
@@ -398,9 +398,9 @@ def db_details(
 #~ main =================================
 def main():
 
-    if len(sys.argv) == 5:
+    if len(sys.argv) < 6:
         parser.print_help(sys.stderr)
-        print(f"\n!!! You didn't provide a query - see above for help.")
+        print(f"\n!!! Your query request was incomplete, see above for help.")
         sys.exit(1)
 
     #~ connect to pgsql - if no DB, see exception.
@@ -444,11 +444,11 @@ def main():
         record_type = "SUM(SPEND)"
 
 #~ three args ========================
-    if args.cust and args.date and args.prod:
+    if args.customer and args.date and args.product:
         customer_records_for_product_from_date(
-            args.cust,
+            args.customer,
             args.date,
-            args.prod,
+            args.product,
             record_type,
             args.table,
             cursor,
@@ -456,11 +456,11 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.week and args.prod:
+    if args.customer and args.week and args.product:
         customer_records_for_product_from_week(
-            args.cust,
+            args.customer,
             args.week,
-            args.prod,
+            args.product,
             record_type,
             args.table,
             cursor,
@@ -468,11 +468,11 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.weekday and args.prod:
+    if args.customer and args.weekday and args.product:
         customer_records_for_product_from_weekday(
-            args.cust,
+            args.customer,
             args.weekday,
-            args.prod,
+            args.product,
             record_type,
             args.table,
             cursor,
@@ -481,9 +481,9 @@ def main():
         return
 
 #~ two args ==========================
-    if args.cust and args.date:
+    if args.customer and args.date:
         customer_records_from_date(
-            args.cust,
+            args.customer,
             args.date,
             record_type,
             args.table,
@@ -492,9 +492,9 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.week:
+    if args.customer and args.week:
         customer_records_from_week(
-            args.cust,
+            args.customer,
             args.week,
             record_type,
             args.table,
@@ -503,9 +503,9 @@ def main():
         connection.close()
         return
 
-    if args.cust and args.weekday:
+    if args.customer and args.weekday:
         customer_records_from_weekday(
-            args.cust,
+            args.customer,
             args.weekday,
             record_type,
             args.table,
@@ -515,9 +515,9 @@ def main():
         return
 
 #~ one arg ===========================
-    if args.cust:
+    if args.customer:
         customer_records_all(
-            args.cust,
+            args.customer,
             record_type,
             args.table,
             cursor,
@@ -525,9 +525,9 @@ def main():
         connection.close()
         return
 
-    if args.prod:
+    if args.product:
         all_records_from_product(
-            args.prod,
+            args.product,
             record_type,
             args.table,
             cursor,
