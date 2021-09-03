@@ -13,7 +13,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier",
-        epilog="Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend")
+        epilog="Example: python pg_querier.py -d database1 -t table1 --customer CUST001 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
