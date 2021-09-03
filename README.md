@@ -59,10 +59,13 @@ Example: python pg_querier.py -d database1 -t table1 --customer CUST001 --date 2
 The above example is asking for the total spend from customer identified as `CUST001` on the 21st of June 2018. Without the flag `--spend`, raw records will be output, which can then be piped into other commands, or saved into a file. Below are some more usage examples:
 
 Provide some information on the dimensions and content of a table:
+
 `python3 pg_querier.py -d database1 -t table1 --details`
 
 Return all the records for transactions of a particular product, in a particular week:
+
 `python3 pg_querier.py -d database1 -t table1 --product PRD0900684 --week 200626`
 
 Return the total item transaction count for a customer, in a particular week:
+
 `python3 pg_querier.py -d database1 -t table1 --customer CUST0000472158 --week 200626 --count`
