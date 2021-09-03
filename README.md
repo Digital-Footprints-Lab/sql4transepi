@@ -4,7 +4,7 @@
   [![GPLv3 license](https://img.shields.io/badge/licence-GPL_v3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
   ![DOI](https://img.shields.io/badge/DOI-TBC-blue.svg)
 
-A set of Python scripts for building, verifying and querying PostgreSQL databases.
+A set of Python scripts for building, examining and querying PostgreSQL databases.
 
 These are designed for querying databases of products and transactions for transactional epidemiology.
 
@@ -53,7 +53,16 @@ The available queries will be listed on an error, or you can run `python3 pg_que
   --count               Return total record counts.
   --spend               Return total spend for the query.
 
-Example: python pg_querier.py -d database1.db -t table1 --cust CUST001 --date 20180621 --spend
+Example: python pg_querier.py -d database1 -t table1 --customer CUST001 --date 20180621 --spend
 ```
 
-The above example is asking for the total spend from customer identified as `CUST001` on the 21st of June 2018. Without the flag `--spend`, raw records will be output, which can then be piped into other commands, or saved into a file.
+The above example is asking for the total spend from customer identified as `CUST001` on the 21st of June 2018. Without the flag `--spend`, raw records will be output, which can then be piped into other commands, or saved into a file. Below are some more usage examples:
+
+Provide some information on the dimensions and content of a table:
+`python3 pg_querier.py -d database1 -t table1 --details`
+
+Return all the records for transactions of a particular product, in a particular week:
+`python3 pg_querier.py -d database1 -t table1 --product PRD0900684 --week 200626`
+
+Return the total item transaction count for a customer, in a particular week:
+`python3 pg_querier.py -d database1 -t table1 --customer CUST0000472158 --week 200626 --count`
