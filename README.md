@@ -4,7 +4,7 @@
   [![GPLv3 license](https://img.shields.io/badge/licence-GPL_v3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
   ![DOI](https://img.shields.io/badge/DOI-TBC-blue.svg)
 
-A set of Python scripts for building, examining and querying PostgreSQL databases.
+A set of Python scripts for building and querying PostgreSQL databases.
 
 These are designed for querying databases of products and transactions for transactional epidemiology.
 
