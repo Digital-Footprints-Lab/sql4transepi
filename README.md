@@ -10,9 +10,21 @@ These are designed for querying databases of products and transactions for trans
 
 ## Guide
 
-1. Install Postgres for the command line. You can follow a [guide](https://www.postgresqltutorial.com/install-postgresql/) here. 
+1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
 
-2. Have Python >= 3.8 installed, and install the `requirements.txt` file to acquire the dependencies
+`git clone https://github.com/altanner/sql4transepi.git`
+
+2. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
+
+3. Create a database to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command), for example
+
+`createdb database_5`
+
+If you get a `role does not exist` error, run this command to make yourself the owner of the database:
+
+`sudo -u postgres createuser --superuser $USER`
+
+4. Have Python >= 3.8 installed, and install the `requirements.txt` file to acquire the dependencies
 
 `pip install -r requirements.txt`
 
@@ -20,9 +32,7 @@ You will now be ready to use these scripts.
 
 ### csv2pg.py
 
-This imports a Comma Separated Values file to a Postgres table. You will first need to create a database to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command), for example
-
-`createdb database_5`
+This imports a Comma Separated Values file to a Postgres table. 
 
 Now that a database is created, we can bring the CSV file into a table. Run the Python script declaring the recieving DB and giving a name to your table, for example
 
