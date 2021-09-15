@@ -1,9 +1,13 @@
+
+#~ Standard library imports
 import sys
 import os
 import re
 import argparse
 from string import Template
 import csv
+
+#~ 3rd party imports
 import pandas as pd
 import psycopg2
 from psycopg2 import Error
@@ -24,6 +28,10 @@ def args_setup():
         "-f", "--file", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
         help="CSV file to import.")
+    parser.add_argument(
+        "-s", "--scrape", action="store_true",
+        help="Import a Boots scrape CSV.")
+
 
     args = parser.parse_args()
 
@@ -82,7 +90,8 @@ def import_csv_to_pg_table(
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
 
-    sql = Template("""COPY $table (
+    sql = Template("""
+        COPY $table (
         SHOP_WEEK,
         SHOP_DATE,
         SHOP_WEEKDAY,
@@ -121,7 +130,7 @@ def db_details(
     cursor,
     connection):
 
-    """Return some information about the current state of Postgres.
+    """Return some information about the DB after scrape import to Postgres.
     """
 
     sql_record_count = Template("""
@@ -158,6 +167,97 @@ def db_details(
         print(e)
 
 
+#~ SCRAPE FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def create_scrape_table(table, connection, cursor):
+
+    """Create a table consistent with the column names
+    for the Boots scraper"""
+
+    #! PRICE as VARCHAR is a workaround given "£" in price.
+    sql = Template("""
+        CREATE TABLE IF NOT EXISTS $table (
+        IDX1 INT,
+        PRODUCT_LINK VARCHAR,
+        PRODUCTID INT,
+        NAME VARCHAR,
+        PRICE VARCHAR,
+        DETAILS VARCHAR,
+        LONG_DESCRIPTION VARCHAR);""")
+
+    try:
+        cursor.execute(sql.substitute(table=table))
+        connection.commit()
+    except Exception as e:
+        print(e)
+
+
+def import_scrape_csv_to_pg_table(
+    db,
+    csv,
+    table,
+    connection,
+    cursor):
+
+    """Imports a CSV with columns named from the Boots scraper"""
+
+    print(f"Importing {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
+
+    dirname = os.path.dirname(__file__)
+    csv_path = os.path.join(dirname, csv.name)
+
+    sql = Template("""
+        COPY $table (
+        IDX1,
+        PRODUCT_LINK,
+        PRODUCTID,
+        NAME,
+        PRICE,
+        DETAILS,
+        LONG_DESCRIPTION)
+        FROM '$csv_path' CSV HEADER;""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        connection.commit()
+        print(f"\nOK, {csv.name} imported.")
+    except Exception as e:
+        print(e)
+
+
+def db_scrape_details(
+    db,
+    table,
+    cursor,
+    connection):
+
+    """
+    Return some information about the current state of Postgres.
+    """
+
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+    sql_column_count = Template("""
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_name='$table';""")
+    sql_product_count = Template("""
+        SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
+
+    try:
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table=table))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_product_count.substitute(table=table))
+        product_count = cursor.fetchall()
+        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
+        print(f"Columns:     {column_count[0][0]}")
+        print(f"Products:    {product_count[0][0]}")
+    except Exception as e:
+        print(e)
+
+
 def main():
 
     parser, args = args_setup()
@@ -171,8 +271,8 @@ def main():
             host="127.0.0.1",
             port="5432")
     except psycopg2.OperationalError as e:
-        print(f"\n!!! The database {args.db} does not seem to exist yet.")
-        print(f"With psql installed, you can create the DB on the command line with:")
+        print(f"\n!!! {e}")
+        print(f"\nYou can create the DB on the command line with:")
         print(f"createdb {args.db}")
         sys.exit(1)
 
@@ -184,19 +284,40 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
-    create_table(
-        args.table,
-        connection,
-        cursor)
+    if args.scrape:
 
-    import_csv_to_pg_table(
-        args.db,
-        args.file,
-        args.table,
-        connection,
-        cursor)
+        create_scrape_table(
+            args.table,
+            connection,
+            cursor)
 
-    db_details(
+        import_scrape_csv_to_pg_table(
+            args.db,
+            args.file,
+            args.table,
+            connection,
+            cursor)
+
+        db_scrape_details(
+            args.db,
+            args.table,
+            cursor,
+            connection)
+
+    else:
+        create_table(
+            args.table,
+            connection,
+            cursor)
+
+        import_csv_to_pg_table(
+            args.db,
+            args.file,
+            args.table,
+            connection,
+            cursor)
+
+        db_details(
             args.db,
             args.table,
             cursor,

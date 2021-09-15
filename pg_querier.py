@@ -1,10 +1,14 @@
+
+#~ Standard library imports
 import sys
 import os
-import signal
 import re
+import signal
 from string import Template
 import argparse
 import csv
+
+#~ 3rd party imports
 import pandas as pd
 import psycopg2
 
@@ -413,7 +417,7 @@ def main():
             port="5432")
         cursor = connection.cursor()
     except psycopg2.OperationalError as e:
-        print(f"\n!!! The database '{args.db}' doesn't seem to exist.")
+        print(f"\n!!! {e}")
         print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
         print(f"\nTo get help: python3 pg_querier.py --help")
         sys.exit(1)
@@ -422,9 +426,17 @@ def main():
     cursor.execute(f"""
         SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
     if not cursor.fetchone()[0]:
-        print(f"\n!!! '{args.table}' doesn't exist in {args.db}.")
-        print(f"If you want to import to table, see the script csv2pg.py")
-        print(f"\nTo get help: python3 pg_querier.py --help")
+        print(f"\n!!! '{args.table}' doesn't exist in database '{args.db}'.")
+        cursor.execute(f"""
+            SELECT * FROM information_schema.tables
+            WHERE table_schema = 'public';""")
+        result = cursor.fetchall()
+        table_list = ""
+        for tab in result:
+            table_list = table_list + tab[2] + ", "
+        print(f"Tables currently in {args.db}: {table_list}")
+        print(f"\nIf you want to import to a table, see the script csv2pg.py")
+        print(f"To get help: python3 pg_querier.py --help")
         sys.exit(1)
 
     if args.details:
