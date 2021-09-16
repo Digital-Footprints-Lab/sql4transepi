@@ -178,7 +178,7 @@ def create_scrape_table(table, connection, cursor):
         CREATE TABLE IF NOT EXISTS $table (
         IDX1 INT,
         PRODUCT_LINK VARCHAR,
-        PRODUCTID INT,
+        PRODUCTID INT UNIQUE,
         NAME VARCHAR,
         PRICE VARCHAR,
         DETAILS VARCHAR,
@@ -190,6 +190,21 @@ def create_scrape_table(table, connection, cursor):
     except Exception as e:
         print(e)
 
+    #~ build a temp table to deal with duplicates
+    sql = """
+        CREATE TABLE IF NOT EXISTS temp_table (
+        IDX1 INT,
+        PRODUCT_LINK VARCHAR,
+        PRODUCTID INT,
+        NAME VARCHAR,
+        PRICE VARCHAR,
+        DETAILS VARCHAR,
+        LONG_DESCRIPTION VARCHAR);"""
+    try:
+        cursor.execute(sql)
+        connection.commit()
+    except Exception as e:
+        print(e)
 
 def import_scrape_csv_to_pg_table(
     db,
@@ -205,8 +220,9 @@ def import_scrape_csv_to_pg_table(
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
 
+    #~ COPY into temp table first, which can deal with dups
     sql = Template("""
-        COPY $table (
+        COPY temp_table (
         IDX1,
         PRODUCT_LINK,
         PRODUCTID,
@@ -217,9 +233,25 @@ def import_scrape_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        cursor.execute(sql.substitute(csv_path=csv_path))
+        connection.commit()
+        print(f"\n{csv.name} imported to staging area...")
+    except Exception as e:
+        print(e)
+
+    #~ then INSERT to true table, rejecting dups on productid
+    sql = Template("""
+        INSERT INTO $table
+        SELECT * FROM temp_table
+        ON CONFLICT DO NOTHING;""")
+
+    try:
+        cursor.execute(sql.substitute(table=table))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
+        #~ remove the temp table
+        cursor.execute("""DROP TABLE IF EXISTS temp_table;""")
+        connection.commit()
     except Exception as e:
         print(e)
 
@@ -254,6 +286,9 @@ def db_scrape_details(
         print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
         print(f"Columns:     {column_count[0][0]}")
         print(f"Products:    {product_count[0][0]}")
+        if record_count[0][0] != product_count[0][0]:
+            discrepancy = record_count[0][0] - product_count[0][0]
+            print(f"\n!!! Note: record and product counts are not equal. \nThis is probably due to {discrepancy} products having null id codes.")
     except Exception as e:
         print(e)
 
@@ -272,7 +307,7 @@ def main():
             port="5432")
     except psycopg2.OperationalError as e:
         print(f"\n!!! {e}")
-        print(f"\nYou can create the DB on the command line with:")
+        print(f"You can create the DB on the command line with:")
         print(f"createdb {args.db}")
         sys.exit(1)
 

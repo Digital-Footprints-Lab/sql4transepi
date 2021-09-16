@@ -361,7 +361,8 @@ def db_details(
     cursor,
     connection):
 
-    """Return some information about the current state of Postgres.
+    """
+    Return some information about the current state of Postgres.
     """
 
     sql_record_count = Template("""
