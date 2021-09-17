@@ -54,6 +54,9 @@ def args_setup():
     parser.add_argument(
         "--spend", action="store_true",
         help="Return total spend for the query.")
+    parser.add_argument(
+        "--scrape", action="store_true",
+        help="Trigger to return scrape table details.")
 
     args = parser.parse_args()
 
@@ -399,6 +402,43 @@ def db_details(
     except Exception as e:
         print(e)
 
+def db_scrape_details(
+    db,
+    table,
+    cursor,
+    connection):
+
+    """
+    Return some information about the current state of Postgres.
+    """
+
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+    sql_column_count = Template("""
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_name='$table';""")
+    sql_product_count = Template("""
+        SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
+
+    try:
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table=table))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_product_count.substitute(table=table))
+        product_count = cursor.fetchall()
+        print(f"DB connection details:\n", connection.get_dsn_parameters())
+        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
+        print(f"Columns:     {column_count[0][0]}")
+        print(f"Products:    {product_count[0][0]}")
+        if record_count[0][0] != product_count[0][0]:
+            discrepancy = record_count[0][0] - product_count[0][0]
+            print(f"\n!!! Note: record and product counts are not equal. \nThis is probably due to {discrepancy} products having null id codes.")
+    except Exception as e:
+        print(e)
+
 
 #~ main =================================
 def main():
@@ -441,11 +481,18 @@ def main():
         sys.exit(1)
 
     if args.details:
-        db_details(
-            args.db,
-            args.table,
-            cursor,
-            connection)
+        if args.scrape:
+            db_scrape_details(
+                args.db,
+                args.table,
+                cursor,
+                connection)
+        else:
+            db_details(
+                args.db,
+                args.table,
+                cursor,
+                connection)
         sys.exit(0)
 
     #~ if args.count is not included, SELECTs will be for all records,
