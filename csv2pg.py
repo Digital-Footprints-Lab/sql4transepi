@@ -266,29 +266,29 @@ def db_scrape_details(
     Return some information about the current state of Postgres.
     """
 
-    sql_record_count = Template("""
-        SELECT COUNT(*)
-        FROM $table;""")
     sql_column_count = Template("""
         SELECT COUNT(*)
         FROM information_schema.columns
         WHERE table_name='$table';""")
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
     sql_product_count = Template("""
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
-        record_count = cursor.fetchall()
         cursor.execute(sql_column_count.substitute(table=table))
         column_count = cursor.fetchall()
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
         cursor.execute(sql_product_count.substitute(table=table))
         product_count = cursor.fetchall()
-        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
-        print(f"Columns:     {column_count[0][0]}")
+        print(f"\n{table} details:\nColumns:     {column_count[0][0]}")
+        print(f"Records:     {record_count[0][0]}")
         print(f"Products:    {product_count[0][0]}")
         if record_count[0][0] != product_count[0][0]:
             discrepancy = record_count[0][0] - product_count[0][0]
-            print(f"\n!!! Note: record and product counts are not equal. \nThis is probably due to {discrepancy} products having null id codes.")
+            print(f"\n!!! Note: record and product counts are not equal. \nThis might be due to {discrepancy} products having null id codes?")
     except Exception as e:
         print(e)
 

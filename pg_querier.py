@@ -383,10 +383,10 @@ def db_details(
         SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
-        record_count = cursor.fetchall()
         cursor.execute(sql_column_count.substitute(table=table))
         column_count = cursor.fetchall()
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
         cursor.execute(sql_cust_count.substitute(table=table))
         cust_count = cursor.fetchall()
         cursor.execute(sql_basket_count.substitute(table=table))
@@ -394,8 +394,8 @@ def db_details(
         cursor.execute(sql_date_count.substitute(table=table))
         date_count = cursor.fetchall()
         print(f"DB connection details:\n", connection.get_dsn_parameters())
-        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
-        print(f"Columns:     {column_count[0][0]}")
+        print(f"\n{table} details:\nColumns:     {column_count[0][0]}")
+        print(f"Records:     {record_count[0][0]}")
         print(f"Customers:   {cust_count[0][0]}")
         print(f"Baskets:     {basket_count[0][0]}")
         print(f"Shop dates:  {date_count[0][0]}")
@@ -412,26 +412,26 @@ def db_scrape_details(
     Return some information about the current state of Postgres.
     """
 
-    sql_record_count = Template("""
-        SELECT COUNT(*)
-        FROM $table;""")
     sql_column_count = Template("""
         SELECT COUNT(*)
         FROM information_schema.columns
         WHERE table_name='$table';""")
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
     sql_product_count = Template("""
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
-        record_count = cursor.fetchall()
         cursor.execute(sql_column_count.substitute(table=table))
         column_count = cursor.fetchall()
+        cursor.execute(sql_record_count.substitute(table=table))
+        record_count = cursor.fetchall()
         cursor.execute(sql_product_count.substitute(table=table))
         product_count = cursor.fetchall()
         print(f"DB connection details:\n", connection.get_dsn_parameters())
-        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
-        print(f"Columns:     {column_count[0][0]}")
+        print(f"\n{table} details:Columns:     {column_count[0][0]}")
+        print(f"Records:     {record_count[0][0]}")
         print(f"Products:    {product_count[0][0]}")
         if record_count[0][0] != product_count[0][0]:
             discrepancy = record_count[0][0] - product_count[0][0]
