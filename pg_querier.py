@@ -2,8 +2,8 @@
 #~ Standard library imports
 import sys
 import os
+import traceback
 import re
-import signal
 from string import Template
 import argparse
 import csv
@@ -61,20 +61,6 @@ def args_setup():
     args = parser.parse_args()
 
     return parser, args
-
-
-def signal_handler(sig, frame):
-
-    """Handle interrupt signals, eg ctrl-c (and other kill signals)."""
-
-    print(f"\nJust a second while I try to exit gracefully...")
-
-    try:
-        connection.close()
-    except Exception as e:
-        print(e)
-
-    sys.exit(1)
 
 
 def output_type(record_type, result):
@@ -443,217 +429,228 @@ def db_scrape_details(
 #~ main =================================
 def main():
 
-    if len(sys.argv) < 6:
-        parser.print_help(sys.stderr)
-        print(f"\n!!! Your query request was incomplete, see above for help.")
-        sys.exit(1)
-
-    #~ connect to pgsql - if no DB, see exception.
     try:
-        connection = psycopg2.connect(
-            database=args.db,
-            user="at9362",
-            password="password",
-            host="127.0.0.1",
-            port="5432")
-        cursor = connection.cursor()
-    except psycopg2.OperationalError as e:
-        print(f"\n!!! {e}")
-        print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
-        print(f"\nTo get help: python3 pg_querier.py --help")
-        sys.exit(1)
 
-    #~ check table exists
-    cursor.execute(f"""
-        SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
-    if not cursor.fetchone()[0]:
-        print(f"\n!!! '{args.table}' doesn't exist in database '{args.db}'.")
+        parser, args = args_setup()
+
+        #~ connect to pgsql - if no DB, see exception.
+        try:
+            connection = psycopg2.connect(
+                database=args.db,
+                user="at9362",
+                password="password",
+                host="127.0.0.1",
+                port="5432")
+            cursor = connection.cursor()
+        except psycopg2.OperationalError as e:
+            print(f"\n!!! {e}")
+            print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
+            print(f"\nTo get help: python3 pg_querier.py --help")
+            sys.exit(1)
+
+        #~ check table exists
         cursor.execute(f"""
-            SELECT * FROM information_schema.tables
-            WHERE table_schema = 'public';""")
-        result = cursor.fetchall()
-        table_list = ""
-        for tab in result:
-            table_list = table_list + tab[2] + ", "
-        print(f"Tables currently in {args.db}: {table_list}")
-        print(f"\nIf you want to import to a table, see the script csv2pg.py")
-        print(f"To get help: python3 pg_querier.py --help")
-        sys.exit(1)
+            SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
+        if not cursor.fetchone()[0]:
+            print(f"\n!!! '{args.table}' doesn't exist in database '{args.db}'.")
+            cursor.execute(f"""
+                SELECT * FROM information_schema.tables
+                WHERE table_schema = 'public';""")
+            result = cursor.fetchall()
+            table_list = ""
+            for tab in result:
+                table_list = table_list + tab[2] + ", "
+            print(f"Tables currently in {args.db}: {table_list}")
+            print(f"\nIf you want to import to a table, see the script csv2pg.py")
+            print(f"To get help: python3 pg_querier.py --help")
+            sys.exit(1)
 
-    if args.details:
-        if args.scrape:
-            db_scrape_details(
-                args.db,
+        if args.details:
+            if args.scrape:
+                db_scrape_details(
+                    args.db,
+                    args.table,
+                    cursor,
+                    connection)
+            else:
+                db_details(
+                    args.db,
+                    args.table,
+                    cursor,
+                    connection)
+            sys.exit(0)
+
+        if len(sys.argv) < 6:
+            parser.print_help(sys.stderr)
+            print(f"\n!!! Your query request was incomplete, see above for help.")
+            sys.exit(1)
+        #~ if args.count is not included, SELECTs will be for all records,
+        #~ flip this to COUNT or SPEND if args request
+        record_type = "*"
+        if args.count and args.spend:
+            print(f"\n!!! Please provide just one record type (spend / count / etc).")
+            sys.exit(1)
+        if args.count:
+            record_type = "COUNT(*)"
+        if args.spend:
+            record_type = "SUM(SPEND)"
+
+    #~ three args ========================
+        if args.customer and args.date and args.product:
+            customer_records_for_product_from_date(
+                args.customer,
+                args.date,
+                args.product,
+                record_type,
                 args.table,
                 cursor,
                 connection)
-        else:
-            db_details(
-                args.db,
+            connection.close()
+            return
+
+        if args.customer and args.week and args.product:
+            customer_records_for_product_from_week(
+                args.customer,
+                args.week,
+                args.product,
+                record_type,
                 args.table,
                 cursor,
                 connection)
-        sys.exit(0)
+            connection.close()
+            return
 
-    #~ if args.count is not included, SELECTs will be for all records,
-    #~ flip this to COUNT or SPEND if args request
-    record_type = "*"
-    if args.count and args.spend:
-        print(f"\n!!! Please provide just one record type (spend / count / etc).")
-        sys.exit(1)
-    if args.count:
-        record_type = "COUNT(*)"
-    if args.spend:
-        record_type = "SUM(SPEND)"
+        if args.customer and args.weekday and args.product:
+            customer_records_for_product_from_weekday(
+                args.customer,
+                args.weekday,
+                args.product,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-#~ three args ========================
-    if args.customer and args.date and args.product:
-        customer_records_for_product_from_date(
-            args.customer,
-            args.date,
-            args.product,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+    #~ two args ==========================
+        if args.customer and args.date:
+            customer_records_from_date(
+                args.customer,
+                args.date,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.customer and args.week and args.product:
-        customer_records_for_product_from_week(
-            args.customer,
-            args.week,
-            args.product,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.customer and args.week:
+            customer_records_from_week(
+                args.customer,
+                args.week,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.customer and args.weekday and args.product:
-        customer_records_for_product_from_weekday(
-            args.customer,
-            args.weekday,
-            args.product,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.customer and args.weekday:
+            customer_records_from_weekday(
+                args.customer,
+                args.weekday,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-#~ two args ==========================
-    if args.customer and args.date:
-        customer_records_from_date(
-            args.customer,
-            args.date,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+    #~ one arg ===========================
+        if args.customer:
+            customer_records_all(
+                args.customer,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.customer and args.week:
-        customer_records_from_week(
-            args.customer,
-            args.week,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.product:
+            all_records_from_product(
+                args.product,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.customer and args.weekday:
-        customer_records_from_weekday(
-            args.customer,
-            args.weekday,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.hour:
+            all_records_from_hour(
+                args.hour,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-#~ one arg ===========================
-    if args.customer:
-        customer_records_all(
-            args.customer,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.date:
+            all_records_from_date(
+                args.date,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.product:
-        all_records_from_product(
-            args.product,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.week:
+            all_records_from_week(
+                args.week,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.hour:
-        all_records_from_hour(
-            args.hour,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.weekday:
+            all_records_from_weekday(
+                args.weekday,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.date:
-        all_records_from_date(
-            args.date,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+        if args.basket:
+            basket_all_records(
+                args.basket,
+                record_type,
+                args.table,
+                cursor,
+                connection)
+            connection.close()
+            return
 
-    if args.week:
-        all_records_from_week(
-            args.week,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+    except KeyboardInterrupt:
+        print("OK, stopping.")
+        try:
+            connection.close()
+        except Exception as e:
+            print(e)
 
-    if args.weekday:
-        all_records_from_weekday(
-            args.weekday,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
 
-    if args.basket:
-        basket_all_records(
-            args.basket,
-            record_type,
-            args.table,
-            cursor,
-            connection)
-        connection.close()
-        return
+    sys.exit(0)
 
 
 if __name__ == "__main__":
-
-    signal.signal(signal.SIGINT, signal_handler)
-
-    parser, args = args_setup()
 
     main()
 

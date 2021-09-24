@@ -25,7 +25,7 @@ def args_setup():
         "-t", "--table", action="store", required=True,
         help="The name of the table to work with.")
     parser.add_argument(
-        "-f", "--file", type=argparse.FileType("r"), default=sys.stdin,
+        "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
         help="CSV file to import.")
     parser.add_argument(
