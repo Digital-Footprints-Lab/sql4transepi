@@ -328,7 +328,7 @@ def main():
 
         import_scrape_csv_to_pg_table(
             args.db,
-            args.file,
+            args.input,
             args.table,
             connection,
             cursor)
@@ -347,7 +347,7 @@ def main():
 
         import_csv_to_pg_table(
             args.db,
-            args.file,
+            args.input,
             args.table,
             connection,
             cursor)

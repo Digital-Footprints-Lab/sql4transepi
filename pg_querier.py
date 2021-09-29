@@ -432,6 +432,9 @@ def main():
     try:
 
         parser, args = args_setup()
+        if len(sys.argv) < 2:
+            parser.print_help(sys.stderr)
+            sys.exit(1)
 
         #~ connect to pgsql - if no DB, see exception.
         try:
@@ -452,7 +455,7 @@ def main():
         cursor.execute(f"""
             SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
         if not cursor.fetchone()[0]:
-            print(f"\n!!! '{args.table}' doesn't exist in database '{args.db}'.")
+            print(f"\n!!! Table '{args.table}' doesn't exist in database '{args.db}'.")
             cursor.execute(f"""
                 SELECT * FROM information_schema.tables
                 WHERE table_schema = 'public';""")
