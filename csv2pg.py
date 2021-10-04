@@ -29,7 +29,7 @@ def args_setup():
         metavar="PATH", required=True,
         help="CSV file to import.")
     parser.add_argument(
-        "-s", "--scrape", action="store_true",
+        "-s", "--boots_scrape", action="store_true",
         help="Import a Boots scrape CSV.")
 
 
@@ -319,7 +319,7 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
-    if args.scrape:
+    if args.boots_scrape:
 
         create_scrape_table(
             args.table,
