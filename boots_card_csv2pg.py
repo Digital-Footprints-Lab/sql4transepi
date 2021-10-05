@@ -17,7 +17,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Boots Advantage Loyalty Cards.",
-        epilog="Example: python csv2sql.py -d database1 -t table1 -f boots_card.csv")
+        epilog="Example: python csv2sql.py -d database1 -t table1 -i boots_card.csv")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to work with.")
@@ -130,6 +130,8 @@ def db_details(
     try:
         cursor.execute(sql_record_count.substitute(table=table))
         record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table=table))
+        column_count = cursor.fetchall()
         cursor.execute(sql_id_count.substitute(table=table))
         id_count = cursor.fetchall()
         cursor.execute(sql_item_count.substitute(table=table))
@@ -137,6 +139,7 @@ def db_details(
         cursor.execute(sql_date_count.substitute(table=table))
         date_count = cursor.fetchall()
         print(f"\n{table} details:\nRecords:       {record_count[0][0]}")
+        print(f"Column count:  {column_count[0][0]}")
         print(f"Customer IDs:  {id_count[0][0]}")
         print(f"Items:         {item_count[0][0]}")
         print(f"Shop dates:    {date_count[0][0]}")
