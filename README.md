@@ -4,11 +4,9 @@
   [![GPLv3 license](https://img.shields.io/badge/licence-GPL_v3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
   ![DOI](https://img.shields.io/badge/DOI-TBC-blue.svg)
 
-A set of Python scripts for building and querying PostgreSQL databases.
+Python scripts for building and querying PostgreSQL databases. These are designed for working with databases of products and transactions in the context of transactional epidemiology.
 
-These are designed for querying databases of products and transactions for transactional epidemiology.
-
-## Guide
+## User Guide
 
 1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
 
@@ -30,15 +28,15 @@ If you get a `role does not exist` error, run this command to make yourself the 
 
 You will now be ready to use these scripts.
 
-### csv2pg.py
+### CSV2PG.py
 
-This imports a Comma Separated Values file to a Postgres table. 
+These scripts import Comma Separated Values files into Postgres. Each of these is tailored for different types of CSV, for example loyalty card customer transaction data, or retailer product information data, and named as such. 
 
-Now that a database is created, we can bring the CSV file into a table. Run the Python script declaring the recieving DB and giving a name to your table, for example
+Run the Python script, using the flags `-d -t -i` to specify the database name, table name and input CSV file name respectively.
 
-`python3 csv2pg.py -d database_5 -t table_1 -f records.csv`
+`python3 tescos_CSV2PG.py -d database_5 -t table_1 -i tesco_loyalty_card.csv`
 
-`-d` is the flag prior to your DB name, `-t` for table name, and `-f` will be the path to your incoming CSV file (usually just the name of the file, if the file is in the working folder). After import, the script will give you some summary details of what the table now contains.
+After import, the script will give you some summary details of what the table now contains.
 
 ### pg_querier.py
 
