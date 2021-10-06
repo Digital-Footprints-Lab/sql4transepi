@@ -46,7 +46,8 @@ pg_querier.py runs user-defined queries against a database, and can return raw r
 
 The available queries will be listed on an error, or you can run `python3 pg_querier --help`
 
-```  -h, --help            show this help message and exit
+```
+  -h, --help            show this help message and exit
   --details             Provide DB and table information.
   -d DB, --db DB        The name of the DB to query.
   -t TABLE, --table TABLE
