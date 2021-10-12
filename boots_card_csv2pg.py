@@ -6,6 +6,8 @@ import re
 import argparse
 from string import Template
 import csv
+import codecs
+import shutil
 
 #~ 3rd party imports
 import pandas as pd
@@ -76,7 +78,7 @@ def import_csv_to_pg_table(
     print(f"Importing Boots Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
-    csv_path = os.path.join(dirname, csv.name)
+    csv_path = os.path.join(dirname, "UTF8" + csv.name)
 
     sql = Template("""
         COPY $table (
@@ -151,6 +153,7 @@ def main():
 
     parser, args = args_setup()
 
+
     #~ Create connection using psycopg2
     try:
         connection = psycopg2.connect(
@@ -172,6 +175,13 @@ def main():
 
     #~ Create a cursor object
     cursor = connection.cursor()
+
+    #~ Boots cards come as UTF16 tab-separated: convert to UTF8 CSV
+    with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
+        card_file_contents = input_file.read()
+        utf8_card_file_contents = card_file_contents.replace("\t", ",")
+        with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
+            output_file.write(utf8_card_file_contents)
 
     create_table(
         args.table,
