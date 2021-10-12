@@ -176,7 +176,7 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
-    #~ Boots cards come as UTF16 tab-separated: convert to UTF8 CSV
+    #~ Boots cards come as UTF16 TSV: convert to UTF8 CSV
     with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
         card_file_contents = input_file.read()
         utf8_card_file_contents = card_file_contents.replace("\t", ",")
