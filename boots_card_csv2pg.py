@@ -10,6 +10,7 @@ import codecs
 import shutil
 
 #~ 3rd party imports
+import chardet
 import pandas as pd
 import psycopg2
 from psycopg2 import Error
@@ -75,7 +76,7 @@ def import_csv_to_pg_table(
 
     """Imports a CSV with columns consistent with Boots loyalty card CSV columns"""
 
-    print(f"Importing Boots Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"\nImporting Boots Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, "UTF8" + csv.name)
@@ -176,12 +177,23 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
-    #~ Boots cards come as UTF16 TSV: convert to UTF8 CSV
-    with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
-        card_file_contents = input_file.read()
-        utf8_card_file_contents = card_file_contents.replace("\t", ",")
-        with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
-            output_file.write(utf8_card_file_contents)
+    #~ Boots cards come as UTF16 TSV: detect and convert to UTF8 CSV
+    with codecs.open(args.input.name, "rb") as input_file:
+        encoding = chardet.detect(input_file.read())
+    if encoding["encoding"] == "UTF-16":
+        print(f"Input file {args.input.name} detected as UTF-16: converting to UTF-8.")
+        with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
+            card_file_contents = input_file.read()
+            utf8_card_file_contents = card_file_contents.replace("\t", ",")
+            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
+                output_file.write(utf8_card_file_contents)
+    else:
+        print(f"Input file {args.input.name} detected as UTF-8.")
+        with codecs.open(args.input.name, "r") as input_file:
+            card_file_contents = input_file.read()
+            utf8_card_file_contents = card_file_contents.replace("\t", ",")
+            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
+                output_file.write(utf8_card_file_contents)
 
     create_table(
         args.table,
