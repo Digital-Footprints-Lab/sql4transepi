@@ -1,4 +1,3 @@
-pandas
-pip-chill
-psycopg2-binary
-pylint
+chardet==4.0.0
+pandas==1.3.1
+psycopg2-binary==2.9.1
