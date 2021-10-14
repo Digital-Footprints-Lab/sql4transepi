@@ -6,6 +6,7 @@ import traceback
 import re
 from string import Template
 import argparse
+import pprint
 import csv
 
 #~ 3rd party imports
@@ -224,7 +225,8 @@ def join_on_product_id(
 #~ GENERAL STATUS QUERY =====================
 def db_details(
     db,
-    table,
+    card_table,
+    product_table,
     cursor,
     connection):
 
@@ -232,22 +234,38 @@ def db_details(
     Return some information about the current state of Postgres.
     """
 
-    sql_column_count = Template("""
+    sql_card_column_count = Template("""
         SELECT COUNT(*)
         FROM information_schema.columns
         WHERE table_name='$table';""")
-    sql_record_count = Template("""
+    sql_card_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+    sql_product_column_count = Template("""
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_name='$table';""")
+    sql_product_record_count = Template("""
         SELECT COUNT(*)
         FROM $table;""")
 
     try:
-        cursor.execute(sql_column_count.substitute(table=table))
-        column_count = cursor.fetchall()
-        cursor.execute(sql_record_count.substitute(table=table))
-        record_count = cursor.fetchall()
-        print(f"DB connection details:\n", connection.get_dsn_parameters())
-        print(f"\n{table} details:\nColumns:       {column_count[0][0]}")
-        print(f"Records:       {record_count[0][0]}")
+        cursor.execute(sql_card_column_count.substitute(table=card_table))
+        card_column_count = cursor.fetchall()
+        cursor.execute(sql_card_record_count.substitute(table=card_table))
+        card_record_count = cursor.fetchall()
+        cursor.execute(sql_product_column_count.substitute(table=product_table))
+        product_column_count = cursor.fetchall()
+        cursor.execute(sql_product_record_count.substitute(table=product_table))
+        product_record_count = cursor.fetchall()
+        print(f"\nDB connection details:\n")
+        pprint.pprint(connection.get_dsn_parameters())
+        print(f"\nTable name:    {card_table}\nColumns:       {card_column_count[0][0]}")
+        print(f"Records:       {card_record_count[0][0]}")
+        print(f"\nTable name:    {product_table}\nColumns:       {product_column_count[0][0]}")
+        print(f"Records:       {product_record_count[0][0]}")
+        print(f"\nAbove are some details about the current DB. Please provide a query.")
+        print(f"For help: python boots_PG_querier.py --help")
     except Exception as e:
         print(e)
 
@@ -277,24 +295,7 @@ def main():
             print(f"\nTo get help: python3 pg_querier.py --help")
             sys.exit(1)
 
-        # #~ check table exists
-        #~ this needs modding for dealing with two tables.
-        # cursor.execute(f"""
-        #     SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
-        # if not cursor.fetchone()[0]:
-        #     print(f"\n!!! Table '{args.table}' doesn't exist in database '{args.db}'.")
-        #     cursor.execute(f"""
-        #         SELECT * FROM information_schema.tables
-        #         WHERE table_schema = 'public';""")
-        #     result = cursor.fetchall()
-        #     table_list = ""
-        #     for tab in result:
-        #         table_list = table_list + tab[2] + ", "
-        #     print(f"Tables currently in {args.db}: {table_list}")
-        #     print(f"\nIf you want to import to a table, see the script csv2pg.py")
-        #     print(f"To get help: python3 pg_querier.py --help")
-        #     sys.exit(1)
-
+        #~ Return some DB details if no query args are given
         if args.details or not any([
             args.product,
             args.customer,
@@ -305,6 +306,7 @@ def main():
             db_details(
                 args.db,
                 args.card_table,
+                args.product_table,
                 cursor,
                 connection)
             sys.exit(0)
@@ -331,7 +333,7 @@ def main():
                 args.date,
                 args.product,
                 record_type,
-                args.table,
+                args.card_table,
                 cursor,
                 connection)
             connection.close()
