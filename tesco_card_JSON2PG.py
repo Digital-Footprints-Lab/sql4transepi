@@ -5,7 +5,7 @@ import os
 import re
 import argparse
 from string import Template
-import csv
+import json
 import codecs
 import shutil
 
@@ -19,8 +19,8 @@ from psycopg2 import Error
 def args_setup():
 
     parser = argparse.ArgumentParser(
-        description="Postgres DB Importer: Boots Advantage Loyalty Cards.",
-        epilog="Example: python boots_card_CSV2PG.py -d database1 -t table1 -i boots_card.csv")
+        description="Postgres DB Importer: Tesco Clubcard Loyalty Cards.",
+        epilog="Example: python tesco_card_JSON2PG.py -d database1 -t table1 -i tescos_card1.json")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to import to.")
@@ -30,7 +30,7 @@ def args_setup():
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
-        help="CSV file to import.")
+        help="JSON file to import.")
 
     args = parser.parse_args()
 
@@ -39,10 +39,9 @@ def args_setup():
 
 def create_table(table, connection, cursor):
 
-    """Create a table consistent with CSVs returned from Boot
-    after an information request. 211004: this csv needs to first
-    be converted from UTF16 to UTF8/ASCII, and from tab delimited
-    to comma separated..."""
+    """Create a table consistent with JSON product details, as
+    provided on a loyalty card information request.
+    We are here flattening a nested JSON to create 1D record structure."""
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
@@ -67,19 +66,22 @@ def create_table(table, connection, cursor):
         print(e)
 
 
-def import_csv_to_pg_table(
+def import_json_to_pg_table(
     db,
-    csv,
+    json,
     table,
     connection,
     cursor):
 
-    """Imports a CSV with columns consistent with Boots loyalty card CSV columns"""
+    """
+    Imports a CSV with columns consistent with Tesco loyalty card JSON fields.
+    See function "create_table" for the fields we are extracting and making into columns.
+    """
 
-    print(f"\nImporting Boots Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"\nImporting Tescos Card {json.name} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
-    csv_path = os.path.join(dirname, "UTF8" + csv.name)
+    json_path = os.path.join(dirname, json.name)
 
     sql = Template("""
         COPY $table (
@@ -96,12 +98,12 @@ def import_csv_to_pg_table(
         UNITS,
         SPEND,
         DISCOUNT)
-        FROM '$csv_path' CSV HEADER;""")
+        FROM '$json_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        cursor.execute(sql.substitute(table=table, json_path=json_path))
         connection.commit()
-        print(f"\nOK, {csv.name} imported.")
+        print(f"\nOK, {json.name} imported.")
     except Exception as e:
         print(e)
 
@@ -113,7 +115,7 @@ def db_details(
     connection):
 
     """
-    Return some information about the Boots card import to Postgres.
+    Return some information about the Tesco card import to Postgres.
     """
 
     sql_record_count = Template("""
@@ -176,30 +178,12 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
-    #~ Boots cards come as UTF16 TSV: detect and convert to UTF8 CSV
-    with codecs.open(args.input.name, "rb") as input_file:
-        encoding = chardet.detect(input_file.read())
-    if encoding["encoding"] == "UTF-16":
-        print(f"Input file {args.input.name} detected as UTF-16: converting to UTF-8.")
-        with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
-            card_file_contents = input_file.read()
-            utf8_card_file_contents = card_file_contents.replace("\t", ",")
-            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
-                output_file.write(utf8_card_file_contents)
-    else:
-        print(f"Input file {args.input.name} detected as UTF-8.")
-        with codecs.open(args.input.name, "r") as input_file:
-            card_file_contents = input_file.read()
-            utf8_card_file_contents = card_file_contents.replace("\t", ",")
-            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
-                output_file.write(utf8_card_file_contents)
-
     create_table(
         args.table,
         connection,
         cursor)
 
-    import_csv_to_pg_table(
+    import_json_to_pg_table(
         args.db,
         args.input,
         args.table,
