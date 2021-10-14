@@ -3,7 +3,6 @@ import csv
 import argparse
 import sys
 import hashlib
-from pathlib import Path
 
 
 def args_setup():
