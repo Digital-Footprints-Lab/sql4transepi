@@ -18,7 +18,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier: Boots transaction data",
-        epilog="Example: python pg_querier.py -d database1 -t table1 --customer 9874786793 --date 20180621 --spend")
+        epilog="Example: python boots_PG_querier.py -d database1 --card_table table1 --customer 9874786793 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
@@ -298,6 +298,8 @@ def main():
         #~ Return some DB details if no query args are given
         if args.details or not any([
             args.product,
+            args.card_table,
+            args.product_table,
             args.customer,
             args.date,
             args.count,

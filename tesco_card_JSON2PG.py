@@ -5,7 +5,7 @@ import os
 import re
 import argparse
 from string import Template
-import json
+import csv
 import codecs
 import shutil
 
@@ -20,7 +20,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Tesco Clubcard Loyalty Cards.",
-        epilog="Example: python tesco_card_JSON2PG.py -d database1 -t table1 -i tescos_card1.json")
+        epilog="Example: python tesco_card_JSON2PG.py -d database1 -t table1 -i tescos_card1.csv")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
         help="The name of the DB to import to.")
@@ -39,25 +39,27 @@ def args_setup():
 
 def create_table(table, connection, cursor):
 
-    """Create a table consistent with JSON product details, as
-    provided on a loyalty card information request.
-    We are here flattening a nested JSON to create 1D record structure."""
+    """
+    Create a table consistent with JSON product details, as
+    provided on a loyalty card information request, and converted to CSV
+    by the script tesco_card_JSON2CSV.py
+    ie, there are three extra fields added to each product block
+    1. storeid   2. timestamp   3. customerid
+    (customerid is hash generated since there is no ID in tesco jsons)
+    See tesco_card_JSON2CSV.py for more details
+    """
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
-        ID BIGINT,
-        DATE2 DATE,
-        TIME3 TIME,
-        STORE VARCHAR,
-        PAYMENT VARCHAR,
-        STAFF_DISCOUNT_CARD_NUMBER INT,
-        ITEM_CODE INT,
-        ITEM_DESCRIPTION VARCHAR,
-        POINTS_ADJUSTMENT INT,
-        POINTS_ITEM REAL,
-        UNITS INT,
-        SPEND MONEY,
-        DISCOUNT REAL);""")
+        PRODUCTNAME VARCHAR,
+        QUANTITY INT,
+        CHANNEL VARCHAR,
+        WEIGHT VARCHAR,
+        PRICE MONEY,
+        VOLUME VARCHAR,
+        STOREID INT,
+        TIMESTAMP TIMESTAMP,
+        CUSTOMERID VARCHAR);""")
 
     try:
         cursor.execute(sql.substitute(table=table))
@@ -66,44 +68,41 @@ def create_table(table, connection, cursor):
         print(e)
 
 
-def import_json_to_pg_table(
+def import_csv_to_pg_table(
     db,
-    json,
+    csv,
     table,
     connection,
     cursor):
 
     """
     Imports a CSV with columns consistent with Tesco loyalty card JSON fields.
+    This is generated using the script tesco_card_JSON2CSV.py
     See function "create_table" for the fields we are extracting and making into columns.
     """
 
-    print(f"\nImporting Tescos Card {json.name} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"\nImporting Tescos Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
-    json_path = os.path.join(dirname, json.name)
+    csv_path = os.path.join(dirname, csv.name)
 
     sql = Template("""
         COPY $table (
-        ID,
-        DATE2,
-        TIME3,
-        STORE,
-        PAYMENT,
-        STAFF_DISCOUNT_CARD_NUMBER,
-        ITEM_CODE,
-        ITEM_DESCRIPTION,
-        POINTS_ADJUSTMENT,
-        POINTS_ITEM,
-        UNITS,
-        SPEND,
-        DISCOUNT)
-        FROM '$json_path' CSV HEADER;""")
+        PRODUCTNAME,
+        QUANTITY,
+        CHANNEL,
+        WEIGHT,
+        PRICE,
+        VOLUME,
+        STOREID,
+        TIMESTAMP,
+        CUSTOMERID)
+        FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, json_path=json_path))
+        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
         connection.commit()
-        print(f"\nOK, {json.name} imported.")
+        print(f"\nOK, {csv.name} imported.")
     except Exception as e:
         print(e)
 
@@ -126,11 +125,11 @@ def db_details(
         FROM information_schema.columns
         WHERE table_name='$table';""")
     sql_id_count = Template("""
-        SELECT COUNT (DISTINCT ID) FROM $table;""")
+        SELECT COUNT (DISTINCT CUSTOMERID) FROM $table;""")
     sql_item_count = Template("""
-        SELECT COUNT (DISTINCT ITEM_CODE) FROM $table;""")
+        SELECT COUNT (DISTINCT PRODUCTNAME) FROM $table;""")
     sql_date_count = Template("""
-        SELECT COUNT (DISTINCT DATE2) FROM $table;""")
+        SELECT COUNT (DISTINCT TIMESTAMP) FROM $table;""")
 
     try:
         cursor.execute(sql_record_count.substitute(table=table))
@@ -183,7 +182,7 @@ def main():
         connection,
         cursor)
 
-    import_json_to_pg_table(
+    import_csv_to_pg_table(
         args.db,
         args.input,
         args.table,
