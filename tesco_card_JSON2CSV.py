@@ -55,7 +55,7 @@ def json_items_to_csv_file(json_file, customer_id):
     Does the JSON nest-diving to create a single row per item.
     In the JSON, each item does not have useful things like timestamps,
     customerId, etc, so those are extracted from other nests and
-    reinserted for each produst.
+    reinserted for each product.
 
     Args:       incoming JSON file
                 hex identifier from generate_hash_id()
