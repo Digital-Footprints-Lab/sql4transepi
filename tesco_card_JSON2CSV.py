@@ -29,8 +29,8 @@ def generate_hash_id(json_file):
     the card number is obfuscated, and there are no other
     identifiers to use. This function generates a hex hash,
     using the information block of "Clubcard Accounts" as the hashable.
-    It is assumed this block will never change between
-    card JSONs, but I am not sure if that assumption is safe.
+    It is assumed this block will never change between card JSONs
+    from the same customer, but I am not sure if that assumption is safe.
 
     Args:       A JSON file of Tesco Clubcard user details and transactions
 
