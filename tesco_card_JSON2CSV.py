@@ -28,9 +28,9 @@ def generate_hash_id(json_file):
     Tesco card JSONs do not have a unique user identifier:
     the card number is obfuscated, and there are no other
     identifiers to use. This function generates a hex hash,
-    using the information block of "Clubcard Accounts" as the hashable.
-    It is assumed this block will never change between card JSONs
-    from the same customer, but I am not sure if that assumption is safe.
+    using the transaction storeId and timestamp for the first even transaction
+    as the hashable. This should be unique and immutable, unless Tesco
+    change the format of what their JSONs.
 
     Args:       A JSON file of Tesco Clubcard user details and transactions
 
@@ -40,9 +40,11 @@ def generate_hash_id(json_file):
     with open(json_file) as json_infile:
         data = json.load(json_infile)
 
-    hash_input = data["Customer Profile And Contact Data"]["Clubcard Accounts"]
+    store_id = data["Purchase"][0][0]["storeId"]
+    timestamp = data["Purchase"][0][0]["timeStamp"]
+    hash_input = store_id + timestamp
     cust_hash = hashlib.sha1(str(hash_input).encode())
-    cust_hex = cust_hash.hexdigest()
+    cust_hex = cust_hash.hexdigest()[0:16]
 
     print(f"\nAssigning hash as customer identifier: {cust_hex}")
 
