@@ -8,7 +8,6 @@ from string import Template
 import csv
 
 #~ 3rd party imports
-import pandas as pd
 import psycopg2
 from psycopg2 import Error
 
