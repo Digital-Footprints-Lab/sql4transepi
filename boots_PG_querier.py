@@ -10,7 +10,6 @@ import pprint
 import csv
 
 #~ 3rd party imports
-import pandas as pd
 import psycopg2
 
 

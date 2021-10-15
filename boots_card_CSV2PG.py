@@ -11,7 +11,6 @@ import shutil
 
 #~ 3rd party imports
 import chardet
-import pandas as pd
 import psycopg2
 from psycopg2 import Error
 
@@ -23,10 +22,10 @@ def args_setup():
         epilog="Example: python boots_card_CSV2PG.py -d database1 -t table1 -i boots_card.csv")
     parser.add_argument(
         "-d", "--db", action="store", required=True,
-        help="The name of the DB to import to.")
+        help="The name of the DB to import to. This needs to have previously created.")
     parser.add_argument(
         "-t", "--table", action="store", required=True,
-        help="The name of the table to import to.")
+        help="The name of the table to import to, or to create if it doesn't exist.")
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
