@@ -153,6 +153,9 @@ def db_details(
 def main():
 
     parser, args = args_setup()
+    if len(sys.argv) < 2:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     #~ Create connection using psycopg2
     try:
