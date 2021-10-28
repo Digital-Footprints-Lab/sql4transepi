@@ -1,6 +1,7 @@
 import json
 import csv
 import argparse
+from collections import OrderedDict
 import sys
 import hashlib
 
@@ -79,12 +80,16 @@ def json_items_to_csv_file(json_file, customer_id):
         timeStamp = transaction["timeStamp"]
         #~ The "product" nest is a >>dict<< of items in the transaction
         for item in transaction["product"]:
+            item = OrderedDict(item)
             #~ add storeId
             item["storeId"] = storeId
-            #~ add timeStamp
+            item.move_to_end("storeId", last=False)
+            #~ add timestamp
             item["timeStamp"] = timeStamp
+            item.move_to_end("timeStamp", last=False)
             #~ add our hash-generated customer ID
             item["customerId"] = customer_id
+            item.move_to_end("customerId", last=False)
             #~ add the whole lot to our item list
             items.append(item)
 
