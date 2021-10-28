@@ -81,13 +81,13 @@ def json_items_to_csv_file(json_file, customer_id):
         #~ The "product" nest is a >>dict<< of items in the transaction
         for item in transaction["product"]:
             item = OrderedDict(item)
-            #~ add storeId
+            #~ add storeId + prepend
             item["storeId"] = storeId
             item.move_to_end("storeId", last=False)
-            #~ add timestamp
+            #~ add timestamp + prepend
             item["timeStamp"] = timeStamp
             item.move_to_end("timeStamp", last=False)
-            #~ add our hash-generated customer ID
+            #~ add our hash-generated customer ID + prepend
             item["customerId"] = customer_id
             item.move_to_end("customerId", last=False)
             #~ add the whole lot to our item list
