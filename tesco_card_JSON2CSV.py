@@ -73,20 +73,16 @@ def json_items_to_csv_file(json_file):
         basketId = generate_hash_field(storeId + timeStamp)
         #~ The "product" nest is a >>dict<< of items in the transaction
         for item in transaction["product"]:
-            item = OrderedDict(item)
-            item["storeId"] = storeId
-            item.move_to_end("storeId", last=False)
-            #~ add timestamp + prepend
-            item["timeStamp"] = timeStamp
-            item.move_to_end("timeStamp", last=False)
-            #~ add basketid + prepend
-            item["basketId"] = basketId
-            item.move_to_end("basketId", last=False)
-            #~ add our hash-generated customer ID + prepend
-            item["customerId"] = customerId
-            item.move_to_end("customerId", last=False)
+            _this_item = {}
+            #~ add extra fields, from hashes and containing nest
+            _this_item["customerId"] = customerId
+            _this_item["basketId"] = basketId
+            _this_item["timeStamp"] = timeStamp
+            _this_item["storeId"] = storeId
+            #~ bring in the actual product details nest (6 fields)
+            _this_item.update(item)
             #~ add the whole lot to our item list
-            items.append(item)
+            items.append(_this_item)
 
     outfile_name = args.input.name.replace(".json", ".csv")
 
@@ -96,7 +92,7 @@ def json_items_to_csv_file(json_file):
         csv_writer = csv.writer(csv_outfile)
 
         #~ write the header / column names
-        csv_writer.writerow(item.keys())
+        csv_writer.writerow(_this_item.keys())
 
         for item in items:
             #~ write row
