@@ -43,22 +43,24 @@ def create_table(table, connection, cursor):
     provided on a loyalty card information request, and converted to CSV
     by the script tesco_card_JSON2CSV.py
     ie, there are three extra fields added to each product block
-    1. storeid   2. timestamp   3. customerid
+    1. customerid   2. basketid   3. storeid   4. timestamp
     (customerid is hash generated since there is no ID in tesco jsons)
     See tesco_card_JSON2CSV.py for more details
     """
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
+        CUSTOMERID VARCHAR,
+        BASKETID VARCHAR,
+        TIMESTAMP TIMESTAMP,
+        STOREID INT,
         PRODUCTNAME VARCHAR,
         QUANTITY INT,
         CHANNEL VARCHAR,
         WEIGHT VARCHAR,
-        PRICE MONEY,
-        VOLUME VARCHAR,
-        STOREID INT,
-        TIMESTAMP TIMESTAMP,
-        CUSTOMERID VARCHAR);""")
+        PRICE FLOAT,
+        VOLUME VARCHAR
+        );""")
 
     try:
         cursor.execute(sql.substitute(table=table))
@@ -87,15 +89,16 @@ def import_csv_to_pg_table(
 
     sql = Template("""
         COPY $table (
+        CUSTOMERID,
+        BASKETID,
+        TIMESTAMP,
+        STOREID,
         PRODUCTNAME,
         QUANTITY,
         CHANNEL,
         WEIGHT,
         PRICE,
-        VOLUME,
-        STOREID,
-        TIMESTAMP,
-        CUSTOMERID)
+        VOLUME)
         FROM '$csv_path' CSV HEADER;""")
 
     try:
