@@ -2,6 +2,7 @@
 #~ Standard library imports
 import sys
 import os
+import subprocess
 import re
 import argparse
 from string import Template
@@ -50,16 +51,16 @@ def create_table(table, connection, cursor):
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
-        CUSTOMERID VARCHAR,
-        BASKETID VARCHAR,
-        TIMESTAMP TIMESTAMP,
-        STOREID INT,
-        PRODUCTNAME VARCHAR,
-        QUANTITY INT,
-        CHANNEL VARCHAR,
-        WEIGHT VARCHAR,
-        PRICE FLOAT,
-        VOLUME VARCHAR
+        customer_id VARCHAR,
+        basket_id VARCHAR,
+        time_stamp TIMESTAMP,
+        store_id INT,
+        product_name VARCHAR,
+        quantity INT,
+        channel VARCHAR,
+        weight_in_grams VARCHAR,
+        item_selling_price FLOAT,
+        volume_in_litres VARCHAR
         );""")
 
     try:
@@ -89,16 +90,16 @@ def import_csv_to_pg_table(
 
     sql = Template("""
         COPY $table (
-        CUSTOMERID,
-        BASKETID,
-        TIMESTAMP,
-        STOREID,
-        PRODUCTNAME,
-        QUANTITY,
-        CHANNEL,
-        WEIGHT,
-        PRICE,
-        VOLUME)
+        customer_id,
+        basket_id,
+        time_stamp,
+        store_id,
+        product_name,
+        quantity,
+        channel,
+        weight_in_grams,
+        item_selling_price,
+        volume_in_litres)
         FROM '$csv_path' CSV HEADER;""")
 
     try:
@@ -127,11 +128,11 @@ def db_details(
         FROM information_schema.columns
         WHERE table_name='$table';""")
     sql_id_count = Template("""
-        SELECT COUNT (DISTINCT CUSTOMERID) FROM $table;""")
+        SELECT COUNT (DISTINCT customer_id) FROM $table;""")
     sql_item_count = Template("""
-        SELECT COUNT (DISTINCT PRODUCTNAME) FROM $table;""")
+        SELECT COUNT (DISTINCT product_name) FROM $table;""")
     sql_date_count = Template("""
-        SELECT COUNT (DISTINCT TIMESTAMP) FROM $table;""")
+        SELECT COUNT (DISTINCT time_stamp) FROM $table;""")
 
     try:
         cursor.execute(sql_record_count.substitute(table=table))
@@ -160,17 +161,29 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
+    db_config = {
+        "database": args.db,
+        "user": "at9362",
+        "password": "password",
+        "host": "127.0.0.1",
+        "port": "5432"}
+
     #~ Create connection using psycopg2
     try:
-        connection = psycopg2.connect(
-            database=args.db,
-            user="at9362",
-            password="password",
-            host="127.0.0.1",
-            port="5432")
+        connection = psycopg2.connect(**db_config)
     except psycopg2.OperationalError as e:
         print(f"\n!!! {e}")
-        print(f"You can create the DB on the command line with:")
+        records, _ = subprocess.Popen([
+            'psql','-lA','-F\x02','-R\x01','-h',
+            db_config["host"],'-U',db_config["user"] ],
+            stdout=subprocess.PIPE).communicate()
+        db_names = re.findall(r'x01(.*?)\\x02', str(records))
+        default_db_names = [db_config["user"], "postgres", "template0", "template1", "Name"]
+        for _db in default_db_names:
+            db_names.remove(_db)
+        db_pretty = ", ".join(db_names)
+        print(f"{len(db_names)} databases currently present: {db_pretty}")
+        print(f"You can create a new DB called '{args.db}' on the command line with:")
         print(f"createdb {args.db}")
         sys.exit(1)
 
