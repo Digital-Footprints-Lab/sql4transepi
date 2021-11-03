@@ -195,6 +195,7 @@ def main():
 
     #~ Create connection using psycopg2
     try:
+        # import db_config.config as config
         connection = psycopg2.connect(**db_config)
     except psycopg2.OperationalError as e:
         print(f"\n!!! {e}")

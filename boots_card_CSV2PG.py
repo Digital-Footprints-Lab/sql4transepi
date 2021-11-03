@@ -75,10 +75,10 @@ def import_csv_to_pg_table(
 
     """Imports a CSV with columns consistent with Boots loyalty card CSV columns"""
 
-    print(f"\nImporting Boots Card {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"\nImporting Boots Card {csv} to Postgres DB '{db}', table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
-    csv_path = os.path.join(dirname, "UTF8" + csv.name)
+    csv_path = os.path.join(dirname, csv)
 
     sql = Template("""
         COPY $table (
@@ -100,7 +100,7 @@ def import_csv_to_pg_table(
     try:
         cursor.execute(sql.substitute(table=table, csv_path=csv_path))
         connection.commit()
-        print(f"\nOK, {csv.name} imported.")
+        print(f"\nOK, {csv} imported.")
     except Exception as e:
         print(e)
 
@@ -175,6 +175,7 @@ def main():
     #~ Create a cursor object
     cursor = connection.cursor()
 
+    outfile_name = args.input.name.replace(".csv", ".utf-8.csv")
     #~ Boots cards come as UTF16 TSV: detect and convert to UTF8 CSV
     with codecs.open(args.input.name, "rb") as input_file:
         encoding = chardet.detect(input_file.read())
@@ -183,14 +184,14 @@ def main():
         with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
             card_file_contents = input_file.read()
             utf8_card_file_contents = card_file_contents.replace("\t", ",")
-            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
+            with codecs.open(outfile_name, "w", encoding="utf-8") as output_file:
                 output_file.write(utf8_card_file_contents)
     else:
         print(f"Input file {args.input.name} detected as UTF-8.")
         with codecs.open(args.input.name, "r") as input_file:
             card_file_contents = input_file.read()
             utf8_card_file_contents = card_file_contents.replace("\t", ",")
-            with codecs.open("UTF8" + args.input.name, "w", encoding="utf-8") as output_file:
+            with codecs.open(outfile_name, "w", encoding="utf-8") as output_file:
                 output_file.write(utf8_card_file_contents)
 
     create_table(
@@ -200,7 +201,7 @@ def main():
 
     import_csv_to_pg_table(
         args.db,
-        args.input,
+        outfile_name,
         args.table,
         connection,
         cursor)
