@@ -199,9 +199,9 @@ def main():
         # import db_config.config as config
         connection = psycopg2.connect(**db_config)
     except psycopg2.OperationalError as e:
-        print(f"\n!!! {e}")
+        print(f"\n!!! Connection to Postgres failed: does a database called '{args.db}' exist here?")
         db_names, db_pretty = db_details(db_config["host"], db_config["user"])
-        print(f"{len(db_names)} databases currently seem present: {db_pretty}")
+        print(f"\n{len(db_names)} databases currently seem present: {db_pretty}")
         print(f"You can create a new DB called '{args.db}' on the command line with:")
         print(f"createdb {args.db}")
         sys.exit(1)

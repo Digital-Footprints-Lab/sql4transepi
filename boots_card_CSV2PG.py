@@ -2,6 +2,7 @@
 #~ Standard library imports
 import sys
 import os
+import subprocess
 import re
 import argparse
 from string import Template
@@ -107,7 +108,32 @@ def import_csv_to_pg_table(
         sys.exit(1)
 
 
-def db_details(
+def db_details(host, user):
+
+    """
+    Checks what DBs are actually in operation here.
+    Returns:
+        list:   [dbs]
+        str:    dbs as string
+    """
+
+    #~ apologies for subprocess :|
+    records, _ = subprocess.Popen([
+        'psql','-lA','-F\x02','-R\x01','-h',
+        host,'-U',user ],
+        stdout=subprocess.PIPE).communicate()
+    #~ regex out the DB names.
+    db_names = re.findall(r'x01(.*?)\\x02', str(records))
+    #~ remove the default DBs
+    default_db_names = [user, "postgres", "template0", "template1", "Name"]
+    for _db in default_db_names:
+        db_names.remove(_db)
+    db_pretty = ", ".join(db_names)
+
+    return db_names, db_pretty
+
+
+def table_details(
     db,
     table,
     cursor,
@@ -155,17 +181,21 @@ def main():
 
     parser, args = args_setup()
 
+    db_config = {
+        "database": args.db,
+        "user": "at9362",
+        "password": "password",
+        "host": "127.0.0.1",
+        "port": "5432"}
+
     #~ Create connection using psycopg2
     try:
-        connection = psycopg2.connect(
-            database=args.db,
-            user="at9362",
-            password="password",
-            host="127.0.0.1",
-            port="5432")
+        connection = psycopg2.connect(**db_config)
     except psycopg2.OperationalError as e:
-        print(f"\n!!! {e}")
-        print(f"You can create the DB on the command line with:")
+        print(f"\n!!! Connection to Postgres failed: does a database called '{args.db}' exist here?")
+        db_names, db_pretty = db_details(db_config["host"], db_config["user"])
+        print(f"\n{len(db_names)} databases currently seem present: {db_pretty}")
+        print(f"You can create a new DB called '{args.db}' on the command line with:")
         print(f"createdb {args.db}")
         sys.exit(1)
 
@@ -209,7 +239,7 @@ def main():
         connection,
         cursor)
 
-    db_details(
+    table_details(
         args.db,
         args.table,
         cursor,
