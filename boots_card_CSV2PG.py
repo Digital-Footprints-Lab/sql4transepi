@@ -69,6 +69,7 @@ def create_table(table, connection, cursor):
 def import_csv_to_pg_table(
     db,
     csv,
+    csv_original_name,
     table,
     connection,
     cursor):
@@ -102,7 +103,8 @@ def import_csv_to_pg_table(
         connection.commit()
         print(f"\nOK, {csv} imported.")
     except Exception as e:
-        print(e)
+        print(f"{e}\n!!! The import failed: are you sure {csv_original_name} is the correct format?")
+        sys.exit(1)
 
 
 def db_details(
@@ -202,6 +204,7 @@ def main():
     import_csv_to_pg_table(
         args.db,
         outfile_name,
+        args.input.name,
         args.table,
         connection,
         cursor)

@@ -107,7 +107,8 @@ def import_csv_to_pg_table(
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
     except Exception as e:
-        print(e)
+        print(f"{e}\n!!! The import failed: are you sure {csv.name} is the correct format?")
+        sys.exit(1)
 
 
 def db_details(host, user):
