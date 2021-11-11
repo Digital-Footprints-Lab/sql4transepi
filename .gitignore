@@ -137,3 +137,5 @@ workspace.code-workspace
 sqlite_ops.py
 .vscode/settings.json
 all_custs
+food_fields
+food_values

@@ -12,18 +12,18 @@ import csv
 import pandas as pd
 import psycopg2
 
+#~ local imports
+import db_config
+
 
 def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier",
-        epilog="Example: python pg_querier.py -d database1 -t table1 --customer CUST001 --date 20180621 --spend")
+        epilog="Example: python pg_querier.py -t table1 --customer CUST001 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
-    parser.add_argument(
-        "-d", "--db", action="store",
-        help="The name of the DB to query.")
     parser.add_argument(
         "-t", "--table", action="store",
         help="The name of the table to query.")
@@ -85,7 +85,10 @@ def all_records_from_product(
         WHERE PROD_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, product=product))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            product=product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -104,7 +107,10 @@ def all_records_from_hour(
         WHERE SHOP_HOUR = '$hour';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, hour=hour))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            hour=hour))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -123,7 +129,10 @@ def all_records_from_date(
         WHERE SHOP_DATE = '$date';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, date=date))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            date=date))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -142,7 +151,10 @@ def all_records_from_week(
         WHERE SHOP_WEEK = '$week';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, week=week))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            week=week))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -161,7 +173,10 @@ def all_records_from_weekday(
         WHERE SHOP_WEEKDAY = '$weekday';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, weekday=weekday))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            weekday=weekday))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -180,7 +195,10 @@ def customer_records_all(
         WHERE CUST_CODE = '$customer';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -201,7 +219,11 @@ def customer_records_from_date(
         AND CUST_CODE = '$customer';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            date=date))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -222,7 +244,11 @@ def customer_records_from_week(
         AND SHOP_WEEK = '$week';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, week=week))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            week=week))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -243,7 +269,11 @@ def customer_records_from_weekday(
         AND SHOP_WEEKDAY = '$weekday';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, weekday=weekday))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            weekday=weekday))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -267,7 +297,12 @@ def customer_records_for_product_from_date(
         AND PROD_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date, product=product))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            date=date,
+            product=product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -290,7 +325,12 @@ def customer_records_for_product_from_week(
         AND PROD_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, week=week, product=product))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            week=week,
+            product=product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -313,7 +353,12 @@ def customer_records_for_product_from_weekday(
         AND PROD_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, weekday=weekday, product=product))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            customer=customer,
+            weekday=weekday,
+            product=product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -333,7 +378,10 @@ def basket_all_records(
         WHERE BASKET_ID = '$basket';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, basket=basket))
+        cursor.execute(sql.substitute(
+            record_type=record_type,
+            table=table,
+            basket=basket))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -396,26 +444,23 @@ def main():
             parser.print_help(sys.stderr)
             sys.exit(1)
 
-        #~ connect to pgsql - if no DB, see exception.
+         #~ Create connection using psycopg2
         try:
-            connection = psycopg2.connect(
-                database=args.db,
-                user="at9362",
-                password="password",
-                host="127.0.0.1",
-                port="5432")
-            cursor = connection.cursor()
+            connection = psycopg2.connect(**db_config.config)
         except psycopg2.OperationalError as e:
-            print(f"\n!!! {e}")
-            print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
-            print(f"\nTo get help: python3 pg_querier.py --help")
+            if str(e).__contains__("does not exist"):
+                print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+                print(f"!!! Please create the database before starting with this command:")
+                print(f"\ncreatedb te_db")
+            else:
+                print("\n!!! There was a problem connecting to Postgres:\n{e}")
             sys.exit(1)
 
         #~ check table exists
         cursor.execute(f"""
             SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
         if not cursor.fetchone()[0]:
-            print(f"\n!!! Table '{args.table}' doesn't exist in database '{args.db}'.")
+            print(f"\n!!! Table '{args.table}' doesn't exist.")
             cursor.execute(f"""
                 SELECT * FROM information_schema.tables
                 WHERE table_schema = 'public';""")
@@ -423,7 +468,7 @@ def main():
             table_list = ""
             for tab in result:
                 table_list = table_list + tab[2] + ", "
-            print(f"Tables currently in {args.db}: {table_list}")
+            print(f"Tables currently in DB te_db: {table_list}")
             print(f"\nIf you want to import to a table, see the script csv2pg.py")
             print(f"To get help: python3 pg_querier.py --help")
             sys.exit(1)

@@ -11,15 +11,15 @@ import csv
 import psycopg2
 from psycopg2 import Error
 
+#~ local imports
+import db_config
+
 
 def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Boots Products, website scrape.",
-        epilog="Example: python csv2sql.py -d database1 -t table1 -i monday_scrape.csv")
-    parser.add_argument(
-        "-d", "--db", action="store", required=True,
-        help="The name of the DB to work with.")
+        epilog="Example: python csv2sql.py -t table1 -i monday_scrape.csv")
     parser.add_argument(
         "-t", "--table", action="store", required=True,
         help="The name of the table to work with.")
@@ -31,43 +31,6 @@ def args_setup():
     args = parser.parse_args()
 
     return parser, args
-
-
-def create_table(table, connection, cursor):
-
-    """Create a table consistent with the column names
-    for the CSVs in the Dunn Hunby Tesco example datasets"""
-
-    sql = Template("""
-        CREATE TABLE IF NOT EXISTS $table (
-        SHOP_WEEK INT,
-        SHOP_DATE INT,
-        SHOP_WEEKDAY INT,
-        SHOP_HOUR INT,
-        QUANTITY INT,
-        SPEND MONEY,
-        PROD_CODE VARCHAR,
-        PROD_CODE_10 VARCHAR,
-        PROD_CODE_20 VARCHAR,
-        PROD_CODE_30 VARCHAR,
-        PROD_CODE_40 VARCHAR,
-        CUST_CODE VARCHAR,
-        CUST_PRICE_SENSITIVITY VARCHAR,
-        CUST_LIFESTAGE VARCHAR,
-        BASKET_ID VARCHAR,
-        BASKET_SIZE VARCHAR,
-        BASKET_PRICE_SENSITIVITY VARCHAR,
-        BASKET_TYPE TEXT,
-        BASKET_DOMINANT_MISSION TEXT,
-        STORE_CODE VARCHAR,
-        STORE_FORMAT VARCHAR,
-        STORE_REGION VARCHAR);""")
-
-    try:
-        cursor.execute(sql.substitute(table=table))
-        connection.commit()
-    except Exception as e:
-        print(e)
 
 
 def create_scrape_table(table, connection, cursor):
@@ -109,7 +72,6 @@ def create_scrape_table(table, connection, cursor):
         print(e)
 
 def import_scrape_csv_to_pg_table(
-    db,
     csv,
     table,
     connection,
@@ -117,7 +79,7 @@ def import_scrape_csv_to_pg_table(
 
     """Imports a CSV with columns named from the Boots scraper"""
 
-    print(f"Importing {csv.name} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"Importing {csv.name} to Postgres table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -155,11 +117,12 @@ def import_scrape_csv_to_pg_table(
         cursor.execute("""DROP TABLE IF EXISTS temp_table;""")
         connection.commit()
     except Exception as e:
-        print(e)
+        print(f"\n!!! Import failed: {csv.name} is not consistent with table fields.")
+        print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
+        sys.exit(1)
 
 
 def db_scrape_details(
-    db,
     table,
     cursor,
     connection):
@@ -201,16 +164,14 @@ def main():
 
     #~ Create connection using psycopg2
     try:
-        connection = psycopg2.connect(
-            database=args.db,
-            user="at9362",
-            password="password",
-            host="127.0.0.1",
-            port="5432")
+        connection = psycopg2.connect(**db_config.config)
     except psycopg2.OperationalError as e:
-        print(f"\n!!! {e}")
-        print(f"You can create the DB on the command line with:")
-        print(f"createdb {args.db}")
+        if str(e).__contains__("does not exist"):
+            print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+            print(f"!!! Please create the database before starting with this command:")
+            print(f"\ncreatedb te_db")
+        else:
+            print("\n!!! There was a problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
     #~ Check for disallowed characters in table name
@@ -227,14 +188,12 @@ def main():
         cursor)
 
     import_scrape_csv_to_pg_table(
-        args.db,
         args.input,
         args.table,
         connection,
         cursor)
 
     db_scrape_details(
-        args.db,
         args.table,
         cursor,
         connection)

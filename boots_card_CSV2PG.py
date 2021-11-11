@@ -15,24 +15,28 @@ import chardet
 import psycopg2
 from psycopg2 import Error
 
+#~ local imports
+import db_config
+
 
 def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Boots Advantage Loyalty Cards.",
-        epilog="Example: python boots_card_CSV2PG.py -d database1 -t table1 -i boots_card.csv")
+        epilog="Example: python boots_card_CSV2PG.py -t table1 -i boots_card.csv")
     parser.add_argument(
-        "-d", "--db", action="store", required=True,
-        help="The name of the DB to import to. This needs to have previously created.")
-    parser.add_argument(
-        "-t", "--table", action="store", required=True,
+        "-t", "--table", action="store",
         help="The name of the table to import to, or to create if it doesn't exist.")
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
-        metavar="PATH", required=True,
+        metavar="PATH",
         help="CSV file to import.")
 
     args = parser.parse_args()
+
+    if len(sys.argv) < 2:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     return parser, args
 
@@ -68,7 +72,6 @@ def create_table(table, connection, cursor):
 
 
 def import_csv_to_pg_table(
-    db,
     csv,
     csv_original_name,
     table,
@@ -77,7 +80,7 @@ def import_csv_to_pg_table(
 
     """Imports a CSV with columns consistent with Boots loyalty card CSV columns"""
 
-    print(f"\nImporting Boots Card {csv} to Postgres DB '{db}', table '{table}', just a moment...")
+    print(f"\nImporting Boots Card {csv} to Postgres table '{table}', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv)
@@ -104,7 +107,8 @@ def import_csv_to_pg_table(
         connection.commit()
         print(f"\nOK, {csv} imported.")
     except Exception as e:
-        print(f"{e}\n!!! The import failed: are you sure {csv_original_name} is the correct format?")
+        print(f"\n!!! Import failed: {csv_original_name} is not consistent with table fields.")
+        print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
         sys.exit(1)
 
 
@@ -134,7 +138,6 @@ def db_details(host, user):
 
 
 def table_details(
-    db,
     table,
     cursor,
     connection):
@@ -180,23 +183,20 @@ def table_details(
 def main():
 
     parser, args = args_setup()
-
-    db_config = {
-        "database": args.db,
-        "user": "at9362",
-        "password": "password",
-        "host": "127.0.0.1",
-        "port": "5432"}
+    if len(sys.argv) < 2:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     #~ Create connection using psycopg2
     try:
-        connection = psycopg2.connect(**db_config)
+        connection = psycopg2.connect(**db_config.config)
     except psycopg2.OperationalError as e:
-        print(f"\n!!! Connection to Postgres failed: does a database called '{args.db}' exist here?")
-        db_names, db_pretty = db_details(db_config["host"], db_config["user"])
-        print(f"\n{len(db_names)} databases currently seem present: {db_pretty}")
-        print(f"You can create a new DB called '{args.db}' on the command line with:")
-        print(f"createdb {args.db}")
+        if str(e).__contains__("does not exist"):
+            print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+            print(f"!!! Please create the database before starting with this command:")
+            print(f"\ncreatedb te_db")
+        else:
+            print("\n!!! There was a problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
     #~ Check for disallowed characters in table name
@@ -232,7 +232,6 @@ def main():
         cursor)
 
     import_csv_to_pg_table(
-        args.db,
         outfile_name,
         args.input.name,
         args.table,
@@ -240,7 +239,6 @@ def main():
         cursor)
 
     table_details(
-        args.db,
         args.table,
         cursor,
         connection)
