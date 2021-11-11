@@ -20,13 +20,10 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier",
-        epilog="Example: python pg_querier.py -t table1 --customer CUST001 --date 20180621 --spend")
+        epilog="Example: python pg_querier.py --customer CUST001 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
-    parser.add_argument(
-        "-t", "--table", action="store",
-        help="The name of the table to query.")
     parser.add_argument(
         "--customer", action="store",
         help="Customer code to query. Format: CUST0123456789")
@@ -76,7 +73,6 @@ def output_type(record_type, result):
 def all_records_from_product(
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -87,7 +83,7 @@ def all_records_from_product(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             product=product))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -98,7 +94,6 @@ def all_records_from_product(
 def all_records_from_hour(
     hour,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -109,7 +104,7 @@ def all_records_from_hour(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             hour=hour))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -120,7 +115,6 @@ def all_records_from_hour(
 def all_records_from_date(
     date,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -131,7 +125,7 @@ def all_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             date=date))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -142,7 +136,6 @@ def all_records_from_date(
 def all_records_from_week(
     week,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -153,7 +146,7 @@ def all_records_from_week(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             week=week))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -164,7 +157,6 @@ def all_records_from_week(
 def all_records_from_weekday(
     weekday,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -175,7 +167,7 @@ def all_records_from_weekday(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             weekday=weekday))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -186,7 +178,6 @@ def all_records_from_weekday(
 def customer_records_all(
     customer,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -197,7 +188,7 @@ def customer_records_all(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -209,7 +200,6 @@ def customer_records_from_date(
     customer,
     date,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -221,7 +211,7 @@ def customer_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             date=date))
         result = cursor.fetchall()
@@ -234,7 +224,6 @@ def customer_records_from_week(
     customer,
     week,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -246,7 +235,7 @@ def customer_records_from_week(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             week=week))
         result = cursor.fetchall()
@@ -259,7 +248,6 @@ def customer_records_from_weekday(
     customer,
     weekday,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -271,7 +259,7 @@ def customer_records_from_weekday(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             weekday=weekday))
         result = cursor.fetchall()
@@ -286,7 +274,6 @@ def customer_records_for_product_from_date(
     date,
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -299,7 +286,7 @@ def customer_records_for_product_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             date=date,
             product=product))
@@ -314,7 +301,6 @@ def customer_records_for_product_from_week(
     week,
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -327,7 +313,7 @@ def customer_records_for_product_from_week(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             week=week,
             product=product))
@@ -342,7 +328,6 @@ def customer_records_for_product_from_weekday(
     weekday,
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -355,7 +340,7 @@ def customer_records_for_product_from_weekday(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             customer=customer,
             weekday=weekday,
             product=product))
@@ -369,7 +354,6 @@ def customer_records_for_product_from_weekday(
 def basket_all_records(
     basket,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -380,7 +364,7 @@ def basket_all_records(
     try:
         cursor.execute(sql.substitute(
             record_type=record_type,
-            table=table,
+            table="dunn_humby",
             basket=basket))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -390,8 +374,6 @@ def basket_all_records(
 
 #~ GENERAL STATUS QUERY =====================
 def db_details(
-    db,
-    table,
     cursor,
     connection):
 
@@ -414,19 +396,19 @@ def db_details(
         SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
 
     try:
-        cursor.execute(sql_column_count.substitute(table=table))
+        cursor.execute(sql_column_count.substitute(table="dunn_humby"))
         column_count = cursor.fetchall()
-        cursor.execute(sql_record_count.substitute(table=table))
+        cursor.execute(sql_record_count.substitute(table="dunn_humby"))
         record_count = cursor.fetchall()
-        cursor.execute(sql_cust_count.substitute(table=table))
+        cursor.execute(sql_cust_count.substitute(table="dunn_humby"))
         cust_count = cursor.fetchall()
-        cursor.execute(sql_basket_count.substitute(table=table))
+        cursor.execute(sql_basket_count.substitute(table="dunn_humby"))
         basket_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table=table))
+        cursor.execute(sql_date_count.substitute(table="dunn_humby"))
         date_count = cursor.fetchall()
         print(f"DB connection details:\n", connection.get_dsn_parameters())
-        print(f"\n{table} details:\nColumns:     {column_count[0][0]}")
-        print(f"Records:     {record_count[0][0]}")
+        print(f"\ndunn_humby details:\nRecords:     {record_count[0][0]}")
+        print(f"Columns:     {column_count[0][0]}")
         print(f"Customers:   {cust_count[0][0]}")
         print(f"Baskets:     {basket_count[0][0]}")
         print(f"Shop dates:  {date_count[0][0]}")
@@ -456,11 +438,14 @@ def main():
                 print("\n!!! There was a problem connecting to Postgres:\n{e}")
             sys.exit(1)
 
+        #~ Create a cursor object
+        cursor = connection.cursor()
+
         #~ check table exists
         cursor.execute(f"""
-            SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='{args.table}');""")
+            SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name='dunn_humby');""")
         if not cursor.fetchone()[0]:
-            print(f"\n!!! Table '{args.table}' doesn't exist.")
+            print(f"\n!!! Table 'dunn_humby' doesn't exist.")
             cursor.execute(f"""
                 SELECT * FROM information_schema.tables
                 WHERE table_schema = 'public';""")
@@ -468,23 +453,18 @@ def main():
             table_list = ""
             for tab in result:
                 table_list = table_list + tab[2] + ", "
-            print(f"Tables currently in DB te_db: {table_list}")
-            print(f"\nIf you want to import to a table, see the script csv2pg.py")
-            print(f"To get help: python3 pg_querier.py --help")
+            if len(table_list) == 0:
+                print(f"The database currently contains no tables.")
+            else:
+                print(f"Tables currently in DB te_db: {table_list}")
             sys.exit(1)
 
         if args.details:
             db_details(
-                args.db,
-                args.table,
                 cursor,
                 connection)
             sys.exit(0)
 
-        if len(sys.argv) < 6:
-            parser.print_help(sys.stderr)
-            print(f"\n!!! Your query request was incomplete, see above for help.")
-            sys.exit(1)
         #~ if args.count is not included, SELECTs will be for all records,
         #~ flip this to COUNT or SPEND if args request
         record_type = "*"
@@ -503,7 +483,6 @@ def main():
                 args.date,
                 args.product,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -515,7 +494,7 @@ def main():
                 args.week,
                 args.product,
                 record_type,
-                args.table,
+
                 cursor,
                 connection)
             connection.close()
@@ -527,7 +506,6 @@ def main():
                 args.weekday,
                 args.product,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -539,7 +517,6 @@ def main():
                 args.customer,
                 args.date,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -550,7 +527,6 @@ def main():
                 args.customer,
                 args.week,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -561,7 +537,6 @@ def main():
                 args.customer,
                 args.weekday,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -572,7 +547,6 @@ def main():
             customer_records_all(
                 args.customer,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -582,7 +556,6 @@ def main():
             all_records_from_product(
                 args.product,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -592,7 +565,6 @@ def main():
             all_records_from_hour(
                 args.hour,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -602,7 +574,6 @@ def main():
             all_records_from_date(
                 args.date,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -612,7 +583,6 @@ def main():
             all_records_from_week(
                 args.week,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -622,7 +592,6 @@ def main():
             all_records_from_weekday(
                 args.weekday,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
@@ -632,7 +601,6 @@ def main():
             basket_all_records(
                 args.basket,
                 record_type,
-                args.table,
                 cursor,
                 connection)
             connection.close()
