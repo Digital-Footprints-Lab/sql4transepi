@@ -113,6 +113,7 @@ def import_csv_to_pg_table(
         print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
         sys.exit(1)
 
+
 def db_details(host, user):
 
     """

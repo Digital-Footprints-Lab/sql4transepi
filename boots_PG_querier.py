@@ -12,12 +12,15 @@ import csv
 #~ 3rd party imports
 import psycopg2
 
+#~ local imports
+import db_config
+
 
 def args_setup():
 
     parser = argparse.ArgumentParser(
         description="PostgreSQL DB Querier: Boots transaction data",
-        epilog="Example: python boots_PG_querier.py -d database1 --card_table table1 --customer 9874786793 --date 20180621 --spend")
+        epilog="Example: python boots_PG_querier.py --card_table table1 --customer 9874786793 --date 20180621 --spend")
     parser.add_argument(
         "--details", action="store_true",
         help="Provide DB and table information.")
@@ -223,7 +226,6 @@ def join_on_product_id(
 
 #~ GENERAL STATUS QUERY =====================
 def db_details(
-    db,
     card_table,
     product_table,
     cursor,
@@ -279,19 +281,17 @@ def main():
             parser.print_help(sys.stderr)
             sys.exit(1)
 
-        #~ connect to pgsql - if no DB, see exception.
+        #~ Create connection using psycopg2
         try:
-            connection = psycopg2.connect(
-                database=args.db,
-                user="at9362",
-                password="password",
-                host="127.0.0.1",
-                port="5432")
+            connection = psycopg2.connect(**db_config.config)
             cursor = connection.cursor()
         except psycopg2.OperationalError as e:
-            print(f"\n!!! {e}")
-            print(f"If you would like to create a table from a CSV file, see the script csv2pg.py")
-            print(f"\nTo get help: python3 pg_querier.py --help")
+            if str(e).__contains__("does not exist"):
+                print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+                print(f"!!! Please create the database before starting with this command:")
+                print(f"\ncreatedb te_db")
+            else:
+                print("\n!!! There was a problem connecting to Postgres:\n{e}")
             sys.exit(1)
 
         #~ Return some DB details if no query args are given
@@ -305,7 +305,6 @@ def main():
             args.spend,
             args.join]):
             db_details(
-                args.db,
                 args.card_table,
                 args.product_table,
                 cursor,
