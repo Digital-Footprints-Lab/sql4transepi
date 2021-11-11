@@ -20,10 +20,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Foodproducts CSV Dataset.",
-        epilog="Example: python csv2sql.py -t table1 -i foodproducts.csv")
-    parser.add_argument(
-        "-t", "--table", action="store", required=True,
-        help="The name of the table to work with.")
+        epilog="Example: python foodproducts_CSV2PG.py -i foodproducts.csv")
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
@@ -34,7 +31,7 @@ def args_setup():
     return parser, args
 
 
-def create_table(table, connection, cursor):
+def create_table(connection, cursor):
 
     """Create a table consistent with the column names
     for the food example datasets"""
@@ -74,7 +71,7 @@ def create_table(table, connection, cursor):
         l5y_subclass VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="food_products"))
         connection.commit()
     except Exception as e:
         print(e)
@@ -115,7 +112,7 @@ def create_table(table, connection, cursor):
         l5y_subclass VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="food_products"))
         connection.commit()
     except Exception as e:
         print(e)
@@ -123,14 +120,13 @@ def create_table(table, connection, cursor):
 
 def import_csv_to_pg_table(
     csv,
-    table,
     connection,
     cursor):
 
     """Imports a CSV with columns named from the foodproducts.csv
     Tesco example dataset"""
 
-    print(f"Importing {csv.name} to Postgres table '{table}', just a moment...")
+    print(f"Importing {csv.name} to Postgres table 'food_products', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -184,7 +180,7 @@ def import_csv_to_pg_table(
         ON CONFLICT DO NOTHING;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        cursor.execute(sql.substitute(table="food_products", csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
         #~ remove the temp table
@@ -192,15 +188,13 @@ def import_csv_to_pg_table(
         connection.commit()
     except Exception as e:
         print(f"\n!!! Import failed: {csv.name} is not consistent with table fields.")
-        print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
-        print(e)
+        print(f"!!! The csv format might not be correct?")
         sys.exit(1)
 
 
 def db_details(
-    table,
-    cursor,
-    connection):
+    connection,
+    cursor):
 
     """Return some information about the DB after scrape import to Postgres.
     """
@@ -220,17 +214,17 @@ def db_details(
         SELECT COUNT (DISTINCT l4y_class) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
+        cursor.execute(sql_record_count.substitute(table="food_products"))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table=table))
+        cursor.execute(sql_column_count.substitute(table="food_products"))
         column_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table=table))
+        cursor.execute(sql_product_count.substitute(table="food_products"))
         product_count = cursor.fetchall()
-        cursor.execute(sql_department_count.substitute(table=table))
+        cursor.execute(sql_department_count.substitute(table="food_products"))
         department_count = cursor.fetchall()
-        cursor.execute(sql_class_count.substitute(table=table))
+        cursor.execute(sql_class_count.substitute(table="food_products"))
         class_count = cursor.fetchall()
-        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
+        print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
         print(f"Columns:     {column_count[0][0]}")
         print(f"Products:    {product_count[0][0]}")
         print(f"Classes:     {class_count[0][0]}")
@@ -241,21 +235,14 @@ def db_details(
 
 def main():
 
+    if len(sys.argv) < 2:
+        print("\nPostgres DB Importer: Example file 'foodproducts.csv'.")
+        print("Please provide an input file, for example:")
+        print("\npython foodproducts_CSV2PG.py -i foodproducts.csv")
+        sys.exit(1)
+
     parser, args = args_setup()
 
-    # #~ Create connection using psycopg2
-    # try:
-    #     connection = psycopg2.connect(
-    #         database=args.db,
-    #         user="at9362",
-    #         password="password",
-    #         host="127.0.0.1",
-    #         port="5432")
-    # except psycopg2.OperationalError as e:
-    #     print(f"\n!!! {e}")
-    #     print(f"You can create the DB on the command line with:")
-    #     print(f"createdb {args.db}")
-    #     sys.exit(1)
     #~ Create connection using psycopg2
     try:
         connection = psycopg2.connect(**db_config.config)
@@ -268,29 +255,21 @@ def main():
             print("\n!!! There was a problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
-    #~ Check for disallowed characters in table name
-    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include symbols except_underscores.")
-        sys.exit(1)
-
     #~ Create a cursor object
     cursor = connection.cursor()
 
     create_table(
-        args.table,
         connection,
         cursor)
 
     import_csv_to_pg_table(
         args.input,
-        args.table,
         connection,
         cursor)
 
     db_details(
-        args.table,
-        cursor,
-        connection)
+        connection,
+        cursor)
 
     connection.close()
 

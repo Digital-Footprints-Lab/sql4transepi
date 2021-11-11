@@ -20,10 +20,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Dunn Humby Tescos Transaction Datasets.",
-        epilog="Example: python csv2sql.py -t table1 -i items.csv")
-    parser.add_argument(
-        "-t", "--table", action="store", required=True,
-        help="The name of the table to work with.")
+        epilog="Example: python csv2sql.py -i items.csv")
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
@@ -34,7 +31,7 @@ def args_setup():
     return parser, args
 
 
-def create_table(table, connection, cursor):
+def create_table(connection, cursor):
 
     """Create a table consistent with the column names
     for the CSVs in the Dunn Hunby Tesco example datasets"""
@@ -65,7 +62,7 @@ def create_table(table, connection, cursor):
         STORE_REGION VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="dunn_humby"))
         connection.commit()
     except Exception as e:
         print(e)
@@ -73,14 +70,13 @@ def create_table(table, connection, cursor):
 
 def import_csv_to_pg_table(
     csv,
-    table,
     connection,
     cursor):
 
     """Imports a CSV with columns named from the Dunn Hunby
     Tesco example datasets"""
 
-    print(f"Importing {csv.name} to Postgres table '{table}', just a moment...")
+    print(f"Importing {csv.name} to Postgres table 'dunn_humby', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -112,7 +108,7 @@ def import_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        cursor.execute(sql.substitute(table="dunn_humby", csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
     except Exception as e:
@@ -121,9 +117,8 @@ def import_csv_to_pg_table(
         sys.exit(1)
 
 def db_details(
-    table,
-    cursor,
-    connection):
+    connection,
+    cursor):
 
     """Return some information about the DB after scrape import to Postgres.
     """
@@ -143,17 +138,17 @@ def db_details(
         SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
+        cursor.execute(sql_record_count.substitute(table="dunn_humby"))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table=table))
+        cursor.execute(sql_column_count.substitute(table="dunn_humby"))
         column_count = cursor.fetchall()
-        cursor.execute(sql_cust_count.substitute(table=table))
+        cursor.execute(sql_cust_count.substitute(table="dunn_humby"))
         cust_count = cursor.fetchall()
-        cursor.execute(sql_basket_count.substitute(table=table))
+        cursor.execute(sql_basket_count.substitute(table="dunn_humby"))
         basket_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table=table))
+        cursor.execute(sql_date_count.substitute(table="dunn_humby"))
         date_count = cursor.fetchall()
-        print(f"\n{table} details:\nRecords:     {record_count[0][0]}")
+        print(f"\ndunn_humby details:\nRecords:     {record_count[0][0]}")
         print(f"Columns:     {column_count[0][0]}")
         print(f"Customers:   {cust_count[0][0]}")
         print(f"Baskets:     {basket_count[0][0]}")
@@ -164,21 +159,14 @@ def db_details(
 
 def main():
 
+    if len(sys.argv) < 2:
+        print("\nPostgres DB Importer: Dunn Humby Transaction Deatils.")
+        print("Please provide an input file, for example:")
+        print("\npython dunnhumby_CSV2PG.py -i items.csv")
+        sys.exit(1)
+
     parser, args = args_setup()
 
-    # #~ Create connection using psycopg2
-    # try:
-    #     connection = psycopg2.connect(
-    #         database=args.db,
-    #         user="at9362",
-    #         password="password",
-    #         host="127.0.0.1",
-    #         port="5432")
-    # except psycopg2.OperationalError as e:
-    #     print(f"\n!!! {e}")
-    #     print(f"You can create the DB on the command line with:")
-    #     print(f"createdb {args.db}")
-    #     sys.exit(1)
     #~ Create connection using psycopg2
     try:
         connection = psycopg2.connect(**db_config.config)
@@ -191,29 +179,21 @@ def main():
             print("\n!!! There was a problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
-    #~ Check for disallowed characters in table name
-    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include symbols except_underscores.")
-        sys.exit(1)
-
     #~ Create a cursor object
     cursor = connection.cursor()
 
     create_table(
-        args.table,
         connection,
         cursor)
 
     import_csv_to_pg_table(
         args.input,
-        args.table,
         connection,
         cursor)
 
     db_details(
-        args.table,
-        cursor,
-        connection)
+        connection,
+        cursor)
 
     connection.close()
 

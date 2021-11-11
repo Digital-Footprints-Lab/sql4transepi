@@ -23,10 +23,7 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description="Postgres DB Importer: Boots Advantage Loyalty Cards.",
-        epilog="Example: python boots_card_CSV2PG.py -t table1 -i boots_card.csv")
-    parser.add_argument(
-        "-t", "--table", action="store",
-        help="The name of the table to import to, or to create if it doesn't exist.")
+        epilog="Example: python boots_card_CSV2PG.py -i boots_card.csv")
     parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH",
@@ -41,12 +38,10 @@ def args_setup():
     return parser, args
 
 
-def create_table(table, connection, cursor):
+def create_table(connection, cursor):
 
     """Create a table consistent with CSVs returned from Boot
-    after an information request. 211004: this csv needs to first
-    be converted from UTF16 to UTF8/ASCII, and from tab delimited
-    to comma separated..."""
+    after an information request."""
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
@@ -65,7 +60,7 @@ def create_table(table, connection, cursor):
         DISCOUNT REAL);""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="boots_transactions"))
         connection.commit()
     except Exception as e:
         print(e)
@@ -74,13 +69,12 @@ def create_table(table, connection, cursor):
 def import_csv_to_pg_table(
     csv,
     csv_original_name,
-    table,
     connection,
     cursor):
 
     """Imports a CSV with columns consistent with Boots loyalty card CSV columns"""
 
-    print(f"\nImporting Boots Card {csv} to Postgres table '{table}', just a moment...")
+    print(f"\nImporting Boots Card {csv} to Postgres table 'boots_transactions', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv)
@@ -103,12 +97,12 @@ def import_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table=table, csv_path=csv_path))
+        cursor.execute(sql.substitute(table="boots_transactions", csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv} imported.")
     except Exception as e:
         print(f"\n!!! Import failed: {csv_original_name} is not consistent with table fields.")
-        print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
+        print(f"!!! The csv format might not be correct?")
         sys.exit(1)
 
 
@@ -138,9 +132,8 @@ def db_details(host, user):
 
 
 def table_details(
-    table,
-    cursor,
-    connection):
+    connection,
+    cursor):
 
     """
     Return some information about the Boots card import to Postgres.
@@ -161,17 +154,17 @@ def table_details(
         SELECT COUNT (DISTINCT DATE2) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table=table))
+        cursor.execute(sql_record_count.substitute(table="boots_transactions"))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table=table))
+        cursor.execute(sql_column_count.substitute(table="boots_transactions"))
         column_count = cursor.fetchall()
-        cursor.execute(sql_id_count.substitute(table=table))
+        cursor.execute(sql_id_count.substitute(table="boots_transactions"))
         id_count = cursor.fetchall()
-        cursor.execute(sql_item_count.substitute(table=table))
+        cursor.execute(sql_item_count.substitute(table="boots_transactions"))
         item_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table=table))
+        cursor.execute(sql_date_count.substitute(table="boots_transactions"))
         date_count = cursor.fetchall()
-        print(f"\n{table} details:\nRecords:       {record_count[0][0]}")
+        print(f"\nboots_transactions details:\nRecords:       {record_count[0][0]}")
         print(f"Column count:  {column_count[0][0]}")
         print(f"Customer IDs:  {id_count[0][0]}")
         print(f"Items:         {item_count[0][0]}")
@@ -182,10 +175,13 @@ def table_details(
 
 def main():
 
-    parser, args = args_setup()
     if len(sys.argv) < 2:
-        parser.print_help(sys.stderr)
+        print("\nPostgres DB Importer: Boots Advantage Loyalty Cards.")
+        print("Please provide an input file, for example:")
+        print("\npython boots_card_CSV2PG.py -i card4374832.csv")
         sys.exit(1)
+
+    parser, args = args_setup()
 
     #~ Create connection using psycopg2
     try:
@@ -197,11 +193,6 @@ def main():
             print(f"\ncreatedb te_db")
         else:
             print("\n!!! There was a problem connecting to Postgres:\n{e}")
-        sys.exit(1)
-
-    #~ Check for disallowed characters in table name
-    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include symbols except_underscores.")
         sys.exit(1)
 
     #~ Create a cursor object
@@ -227,21 +218,18 @@ def main():
                 output_file.write(utf8_card_file_contents)
 
     create_table(
-        args.table,
         connection,
         cursor)
 
     import_csv_to_pg_table(
         outfile_name,
         args.input.name,
-        args.table,
         connection,
         cursor)
 
     table_details(
-        args.table,
-        cursor,
-        connection)
+        connection,
+        cursor)
 
     connection.close()
 

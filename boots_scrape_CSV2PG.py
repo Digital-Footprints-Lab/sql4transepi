@@ -21,9 +21,6 @@ def args_setup():
         description="Postgres DB Importer: Boots Products, website scrape.",
         epilog="Example: python csv2sql.py -t table1 -i monday_scrape.csv")
     parser.add_argument(
-        "-t", "--table", action="store", required=True,
-        help="The name of the table to work with.")
-    parser.add_argument(
         "-i", "--input", type=argparse.FileType("r"), default=sys.stdin,
         metavar="PATH", required=True,
         help="CSV file to import.")
@@ -33,7 +30,7 @@ def args_setup():
     return parser, args
 
 
-def create_scrape_table(table, connection, cursor):
+def create_scrape_table(connection, cursor):
 
     """Create a table consistent with the column names
     for the Boots scraper"""
@@ -50,7 +47,7 @@ def create_scrape_table(table, connection, cursor):
         LONG_DESCRIPTION VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="boots_products"))
         connection.commit()
     except Exception as e:
         print(e)
@@ -73,13 +70,12 @@ def create_scrape_table(table, connection, cursor):
 
 def import_scrape_csv_to_pg_table(
     csv,
-    table,
     connection,
     cursor):
 
     """Imports a CSV with columns named from the Boots scraper"""
 
-    print(f"Importing {csv.name} to Postgres table '{table}', just a moment...")
+    print(f"Importing {csv.name} to Postgres table 'boots_products', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -110,7 +106,7 @@ def import_scrape_csv_to_pg_table(
         ON CONFLICT DO NOTHING;""")
 
     try:
-        cursor.execute(sql.substitute(table=table))
+        cursor.execute(sql.substitute(table="boots_products"))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
         #~ remove the temp table
@@ -123,9 +119,8 @@ def import_scrape_csv_to_pg_table(
 
 
 def db_scrape_details(
-    table,
-    cursor,
-    connection):
+    connection,
+    cursor):
 
     """
     Return some information about the current state of Postgres.
@@ -142,13 +137,13 @@ def db_scrape_details(
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
     try:
-        cursor.execute(sql_column_count.substitute(table=table))
+        cursor.execute(sql_column_count.substitute(table="boots_products"))
         column_count = cursor.fetchall()
-        cursor.execute(sql_record_count.substitute(table=table))
+        cursor.execute(sql_record_count.substitute(table="boots_products"))
         record_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table=table))
+        cursor.execute(sql_product_count.substitute(table="boots_products"))
         product_count = cursor.fetchall()
-        print(f"\n{table} details:\nColumns:     {column_count[0][0]}")
+        print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
         print(f"Records:     {record_count[0][0]}")
         print(f"Products:    {product_count[0][0]}")
         if record_count[0][0] != product_count[0][0]:
@@ -159,6 +154,12 @@ def db_scrape_details(
 
 
 def main():
+
+    if len(sys.argv) < 2:
+        print("\nPostgres DB Importer: Boots Product Details.")
+        print("Please provide an input file, for example:")
+        print("\npython boots_scrape_CSV2PG.py -i scrape211101.csv")
+        sys.exit(1)
 
     parser, args = args_setup()
 
@@ -174,29 +175,21 @@ def main():
             print("\n!!! There was a problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
-    #~ Check for disallowed characters in table name
-    if args.table[0].isnumeric() or not re.match("^[a-zA-Z0-9_]+$", args.table):
-        print("\n!!! Table names cannot start with a number, or include symbols except_underscores.")
-        sys.exit(1)
-
     #~ Create a cursor object
     cursor = connection.cursor()
 
     create_scrape_table(
-        args.table,
         connection,
         cursor)
 
     import_scrape_csv_to_pg_table(
         args.input,
-        args.table,
         connection,
         cursor)
 
     db_scrape_details(
-        args.table,
-        cursor,
-        connection)
+        connection,
+        cursor)
 
     connection.close()
 
