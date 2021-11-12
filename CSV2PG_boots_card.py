@@ -17,6 +17,7 @@ from psycopg2 import Error
 
 #~ local imports
 import db_config
+import PG_ops
 
 
 def args_setup():
@@ -184,22 +185,10 @@ def main():
     parser, args = args_setup()
 
     #~ Create connection using psycopg2
-    try:
-        connection = psycopg2.connect(**db_config.config)
-    except psycopg2.OperationalError as e:
-        if str(e).__contains__("does not exist"):
-            print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
-            print(f"!!! Please create the database before starting with this command:")
-            print(f"\ncreatedb te_db")
-        else:
-            print("\n!!! There was a problem connecting to Postgres:\n{e}")
-        sys.exit(1)
+    connection, cursor = PG_ops.connect_to_postgres(db_config)
 
-    #~ Create a cursor object
-    cursor = connection.cursor()
-
-    outfile_name = args.input.name.replace(".csv", ".utf-8.csv")
     #~ Boots cards come as UTF16 TSV: detect and convert to UTF8 CSV
+    outfile_name = args.input.name.replace(".csv", ".utf-8.csv")
     with codecs.open(args.input.name, "rb") as input_file:
         encoding = chardet.detect(input_file.read())
     if encoding["encoding"] == "UTF-16":

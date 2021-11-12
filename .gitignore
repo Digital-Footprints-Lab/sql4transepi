@@ -2,7 +2,7 @@
 *.json
 *.db
 *~
-
+*test*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -139,3 +139,4 @@ sqlite_ops.py
 all_custs
 food_fields
 food_values
+CSV2PG_boots_card.py
