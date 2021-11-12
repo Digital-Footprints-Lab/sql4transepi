@@ -13,7 +13,7 @@ from psycopg2 import Error
 
 #~ local imports
 import db_config
-import PG_ops
+import PG_status
 
 
 def args_setup():
@@ -119,7 +119,7 @@ def import_scrape_csv_to_pg_table(
         sys.exit(1)
 
 
-def db_scrape_details(
+def table_details(
     connection,
     cursor):
 
@@ -137,21 +137,18 @@ def db_scrape_details(
     sql_product_count = Template("""
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
-    try:
-        cursor.execute(sql_column_count.substitute(table="boots_products"))
-        column_count = cursor.fetchall()
-        cursor.execute(sql_record_count.substitute(table="boots_products"))
-        record_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table="boots_products"))
-        product_count = cursor.fetchall()
-        print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
-        print(f"Records:     {record_count[0][0]}")
-        print(f"Products:    {product_count[0][0]}")
-        if record_count[0][0] != product_count[0][0]:
-            discrepancy = record_count[0][0] - product_count[0][0]
-            print(f"\n!!! Note: record and product counts differ by {discrepancy}. \nThis may be due to products having null id codes?")
-    except Exception as e:
-        print(e)
+    cursor.execute(sql_column_count.substitute(table="boots_products"))
+    column_count = cursor.fetchall()
+    cursor.execute(sql_record_count.substitute(table="boots_products"))
+    record_count = cursor.fetchall()
+    cursor.execute(sql_product_count.substitute(table="boots_products"))
+    product_count = cursor.fetchall()
+    print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
+    print(f"Records:     {record_count[0][0]}")
+    print(f"Products:    {product_count[0][0]}")
+    if record_count[0][0] != product_count[0][0]:
+        discrepancy = record_count[0][0] - product_count[0][0]
+        print(f"\n!!! Note: record and product counts differ by {discrepancy}. \nThis may be due to products having null id codes?")
 
 
 def main():
@@ -165,7 +162,7 @@ def main():
     parser, args = args_setup()
 
     #~ Create connection using psycopg2
-    connection, cursor = PG_ops.connect_to_postgres(db_config)
+    connection, cursor = PG_status.connect_to_postgres(db_config)
 
     create_scrape_table(
         connection,
@@ -176,9 +173,12 @@ def main():
         connection,
         cursor)
 
-    db_scrape_details(
-        connection,
-        cursor)
+    try:
+        table_details(
+            connection,
+            cursor)
+    except:
+        print("\n!!!There doesn't seem to be a table present.")
 
     connection.close()
 

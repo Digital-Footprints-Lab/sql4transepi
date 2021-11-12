@@ -14,7 +14,7 @@ from psycopg2 import Error
 
 #~ local imports
 import db_config
-import PG_ops
+import PG_status
 
 
 def args_setup():
@@ -138,24 +138,21 @@ def db_details(
     sql_date_count = Template("""
         SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
 
-    try:
-        cursor.execute(sql_record_count.substitute(table="dunn_humby"))
-        record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="dunn_humby"))
-        column_count = cursor.fetchall()
-        cursor.execute(sql_cust_count.substitute(table="dunn_humby"))
-        cust_count = cursor.fetchall()
-        cursor.execute(sql_basket_count.substitute(table="dunn_humby"))
-        basket_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table="dunn_humby"))
-        date_count = cursor.fetchall()
-        print(f"\ndunn_humby details:\nRecords:     {record_count[0][0]}")
-        print(f"Columns:     {column_count[0][0]}")
-        print(f"Customers:   {cust_count[0][0]}")
-        print(f"Baskets:     {basket_count[0][0]}")
-        print(f"Shop dates:  {date_count[0][0]}")
-    except Exception as e:
-        print(e)
+    cursor.execute(sql_record_count.substitute(table="dunn_humby"))
+    record_count = cursor.fetchall()
+    cursor.execute(sql_column_count.substitute(table="dunn_humby"))
+    column_count = cursor.fetchall()
+    cursor.execute(sql_cust_count.substitute(table="dunn_humby"))
+    cust_count = cursor.fetchall()
+    cursor.execute(sql_basket_count.substitute(table="dunn_humby"))
+    basket_count = cursor.fetchall()
+    cursor.execute(sql_date_count.substitute(table="dunn_humby"))
+    date_count = cursor.fetchall()
+    print(f"\ndunn_humby details:\nRecords:     {record_count[0][0]}")
+    print(f"Columns:     {column_count[0][0]}")
+    print(f"Customers:   {cust_count[0][0]}")
+    print(f"Baskets:     {basket_count[0][0]}")
+    print(f"Shop dates:  {date_count[0][0]}")
 
 
 def main():
@@ -169,7 +166,7 @@ def main():
     parser, args = args_setup()
 
     #~ Create connection using psycopg2
-    connection, cursor = PG_ops.connect_to_postgres(db_config)
+    connection, cursor = PG_status.connect_to_postgres(db_config)
 
     create_table(
         connection,
@@ -180,9 +177,12 @@ def main():
         connection,
         cursor)
 
-    db_details(
-        connection,
-        cursor)
+    try:
+        db_details(
+            connection,
+            cursor)
+    except:
+        print("\n!!!There doesn't seem to be a table present.")
 
     connection.close()
 

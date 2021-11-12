@@ -14,43 +14,38 @@ import psycopg2
 
 #~ local imports
 import db_config
+import PG_status
 
 
 def args_setup():
 
     parser = argparse.ArgumentParser(
-        description="PostgreSQL DB Querier: Boots transaction data",
-        epilog="Example: python boots_PG_querier.py --card_table table1 --customer 9874786793 --date 20180621 --spend")
+        description = "PostgreSQL DB Querier: Boots transaction data",
+        epilog = "Example: python boots_PG_querier.py --customer 9874786793 --date 20180621 --spend")
     parser.add_argument(
-        "--details", action="store_true",
-        help="Provide DB and table information.")
+        "--details", action = "store_true",
+        help = "Provide DB and table information.")
     parser.add_argument(
-        "-d", "--db", action="store",
-        help="The name of the DB to query.")
+        "--product_table", action = "store",
+        help = "The name of the product table to query.")
     parser.add_argument(
-        "--card_table", action="store",
-        help="The name of the card table to query.")
+        "--customer", action = "store",
+        help = "Customer code to query. Format: 9874786793")
     parser.add_argument(
-        "--product_table", action="store",
-        help="The name of the product table to query.")
+        "--product", action = "store",
+        help = "Product code to query. Format: 8199922")
     parser.add_argument(
-        "--customer", action="store",
-        help="Customer code to query. Format: 9874786793")
+        "--date", action = "store",
+        help = "Shop date to query. Format: YYYYMMDD")
     parser.add_argument(
-        "--product", action="store",
-        help="Product code to query. Format: 8199922")
+        "--count", action = "store_true",
+        help = "Return total record counts.")
     parser.add_argument(
-        "--date", action="store",
-        help="Shop date to query. Format: YYYYMMDD")
+        "--spend", action = "store_true",
+        help = "Return total spend for the query.")
     parser.add_argument(
-        "--count", action="store_true",
-        help="Return total record counts.")
-    parser.add_argument(
-        "--spend", action="store_true",
-        help="Return total spend for the query.")
-    parser.add_argument(
-        "--join", action="store_true",
-        help="Return card transaction items JOINed with product information.")
+        "--join", action = "store_true",
+        help = "Return card transaction items JOINed with product information.")
 
     args = parser.parse_args()
 
@@ -69,11 +64,10 @@ def output_type(record_type, result):
         print(result[0][0])
 
 
-#~ QUERIES FUNCTIONS start =======================
+#~ QUERIES FUNCTIONS start #################################
 def all_records_from_product(
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -82,7 +76,10 @@ def all_records_from_product(
         WHERE ITEM_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, product=product))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            product = product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -92,7 +89,6 @@ def all_records_from_product(
 def all_records_from_date(
     date,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -101,18 +97,20 @@ def all_records_from_date(
         WHERE DATE2 = '$date';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, date=date))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            date = date))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-#~ CUSTOMER queries =========================
+#~ CUSTOMER queries #################################
 def customer_records_all(
     customer,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -121,7 +119,10 @@ def customer_records_all(
         WHERE ID = '$customer';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            customer = customer))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -132,7 +133,6 @@ def customer_records_for_product(
     customer,
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -142,7 +142,11 @@ def customer_records_for_product(
         AND ITEM_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, product=product))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            customer = customer,
+            product = product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -153,7 +157,6 @@ def customer_records_from_date(
     customer,
     date,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -163,20 +166,23 @@ def customer_records_from_date(
         AND ID = '$customer';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            customer = customer,
+            date = date))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-#~ CUSTOMER RECORDS TEMPORALLY WITH PRODUCT ======
+#~ CUSTOMER RECORDS TEMPORALLY WITH PRODUCT ################
 def customer_records_for_product_from_date(
     customer,
     date,
     product,
     record_type,
-    table,
     cursor,
     connection):
 
@@ -187,16 +193,20 @@ def customer_records_for_product_from_date(
         AND ITEM_CODE = '$product';""")
 
     try:
-        cursor.execute(sql.substitute(record_type=record_type, table=table, customer=customer, date=date, product=product))
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            customer = customer,
+            date = date,
+            product = product))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
-#~ inter-table operations
+#~ inter-table operations #######################
 def join_on_product_id(
     record_type,
-    card_table,
     product_table,
     cursor,
     connection):
@@ -215,19 +225,17 @@ def join_on_product_id(
 
     try:
         cursor.execute(sql.substitute(
-            record_type=record_type,
-            card_table=card_table,
-            product_table=product_table))
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products"))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-#~ GENERAL STATUS QUERY =====================
+#~ GENERAL STATUS QUERY ##############################
 def db_details(
-    card_table,
-    product_table,
     cursor,
     connection):
 
@@ -238,32 +246,32 @@ def db_details(
     sql_card_column_count = Template("""
         SELECT COUNT(*)
         FROM information_schema.columns
-        WHERE table_name='$table';""")
+        WHERE table_name = '$table';""")
     sql_card_record_count = Template("""
         SELECT COUNT(*)
         FROM $table;""")
     sql_product_column_count = Template("""
         SELECT COUNT(*)
         FROM information_schema.columns
-        WHERE table_name='$table';""")
+        WHERE table_name = '$table';""")
     sql_product_record_count = Template("""
         SELECT COUNT(*)
         FROM $table;""")
 
     try:
-        cursor.execute(sql_card_column_count.substitute(table=card_table))
+        cursor.execute(sql_card_column_count.substitute(table = "boots_transactions"))
         card_column_count = cursor.fetchall()
-        cursor.execute(sql_card_record_count.substitute(table=card_table))
+        cursor.execute(sql_card_record_count.substitute(table = "boots_transactions"))
         card_record_count = cursor.fetchall()
-        cursor.execute(sql_product_column_count.substitute(table=product_table))
+        cursor.execute(sql_product_column_count.substitute(table = "boots_products"))
         product_column_count = cursor.fetchall()
-        cursor.execute(sql_product_record_count.substitute(table=product_table))
+        cursor.execute(sql_product_record_count.substitute(table = "boots_products"))
         product_record_count = cursor.fetchall()
-        print(f"\nDB connection details:\n")
+        print(f"\nboots_transactions details:\n")
         pprint.pprint(connection.get_dsn_parameters())
-        print(f"\nTable name:    {card_table}\nColumns:       {card_column_count[0][0]}")
+        print(f"\nTable name:    boots_transactions\nColumns:       {card_column_count[0][0]}")
         print(f"Records:       {card_record_count[0][0]}")
-        print(f"\nTable name:    {product_table}\nColumns:       {product_column_count[0][0]}")
+        print(f"\nTable name:    boots_products\nColumns:       {product_column_count[0][0]}")
         print(f"Records:       {product_record_count[0][0]}")
         print(f"\nAbove are some details about the current DB. Please provide a query.")
         print(f"For help: python boots_PG_querier.py --help")
@@ -271,7 +279,7 @@ def db_details(
         print(e)
 
 
-#~ main =================================
+#~ main ############################################
 def main():
 
     try:
@@ -282,22 +290,11 @@ def main():
             sys.exit(1)
 
         #~ Create connection using psycopg2
-        try:
-            connection = psycopg2.connect(**db_config.config)
-            cursor = connection.cursor()
-        except psycopg2.OperationalError as e:
-            if str(e).__contains__("does not exist"):
-                print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
-                print(f"!!! Please create the database before starting with this command:")
-                print(f"\ncreatedb te_db")
-            else:
-                print("\n!!! There was a problem connecting to Postgres:\n{e}")
-            sys.exit(1)
+        connection, cursor = PG_status.connect_to_postgres(db_config)
 
         #~ Return some DB details if no query args are given
         if args.details or not any([
             args.product,
-            args.card_table,
             args.product_table,
             args.customer,
             args.date,
@@ -305,16 +302,14 @@ def main():
             args.spend,
             args.join]):
             db_details(
-                args.card_table,
-                args.product_table,
                 cursor,
                 connection)
             sys.exit(0)
 
-        if len(sys.argv) < 6:
-            parser.print_help(sys.stderr)
-            print(f"\n!!! Your query request was incomplete, see above for help.")
-            sys.exit(1)
+        # if len(sys.argv) < 6:
+        #     parser.print_help(sys.stderr)
+        #     print(f"\n!!! Your query request was incomplete, see above for help.")
+        #     sys.exit(1)
         #~ if args.count is not included, SELECTs will be for all records,
         #~ flip this to COUNT or SPEND if args request
         record_type = "*"
@@ -326,26 +321,24 @@ def main():
         if args.spend:
             record_type = "SUM(SPEND)"
 
-    #~ three args ========================
+    #~ three args ##########################################
         if args.customer and args.date and args.product:
             customer_records_for_product_from_date(
                 args.customer,
                 args.date,
                 args.product,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
             return
 
-    #~ two args ==========================
+    #~ two args #########################################
         if args.customer and args.date:
             customer_records_from_date(
                 args.customer,
                 args.date,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
@@ -356,18 +349,16 @@ def main():
                 args.customer,
                 args.product,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
             return
 
-    #~ one arg ===========================
+    #~ one arg #############################################
         if args.customer:
             customer_records_all(
                 args.customer,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
@@ -377,7 +368,6 @@ def main():
             all_records_from_product(
                 args.product,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
@@ -387,7 +377,6 @@ def main():
             all_records_from_date(
                 args.date,
                 record_type,
-                args.card_table,
                 cursor,
                 connection)
             connection.close()
@@ -396,7 +385,6 @@ def main():
         if args.join:
             join_on_product_id(
                 record_type,
-                args.card_table,
                 args.product_table,
                 cursor,
                 connection)
@@ -411,7 +399,7 @@ def main():
             print(e)
 
     except Exception:
-        traceback.print_exc(file=sys.stdout)
+        traceback.print_exc(file = sys.stdout)
 
     sys.exit(0)
 

@@ -17,7 +17,7 @@ from psycopg2 import Error
 
 #~ local imports
 import db_config
-import PG_ops
+import PG_status
 
 
 def args_setup():
@@ -155,24 +155,21 @@ def table_details(
     sql_date_count = Template("""
         SELECT COUNT (DISTINCT time_stamp) FROM $table;""")
 
-    try:
-        cursor.execute(sql_record_count.substitute(table="tesco_transactions"))
-        record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="tesco_transactions"))
-        column_count = cursor.fetchall()
-        cursor.execute(sql_id_count.substitute(table="tesco_transactions"))
-        id_count = cursor.fetchall()
-        cursor.execute(sql_item_count.substitute(table="tesco_transactions"))
-        item_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table="tesco_transactions"))
-        date_count = cursor.fetchall()
-        print(f"\ntesco_transactions table details:\nRecords:       {record_count[0][0]}")
-        print(f"Column count:  {column_count[0][0]}")
-        print(f"Customer IDs:  {id_count[0][0]}")
-        print(f"Items:         {item_count[0][0]}")
-        print(f"Shop dates:    {date_count[0][0]}")
-    except Exception as e:
-        print(e)
+    cursor.execute(sql_record_count.substitute(table="tesco_transactions"))
+    record_count = cursor.fetchall()
+    cursor.execute(sql_column_count.substitute(table="tesco_transactions"))
+    column_count = cursor.fetchall()
+    cursor.execute(sql_id_count.substitute(table="tesco_transactions"))
+    id_count = cursor.fetchall()
+    cursor.execute(sql_item_count.substitute(table="tesco_transactions"))
+    item_count = cursor.fetchall()
+    cursor.execute(sql_date_count.substitute(table="tesco_transactions"))
+    date_count = cursor.fetchall()
+    print(f"\ntesco_transactions table details:\nRecords:       {record_count[0][0]}")
+    print(f"Column count:  {column_count[0][0]}")
+    print(f"Customer IDs:  {id_count[0][0]}")
+    print(f"Items:         {item_count[0][0]}")
+    print(f"Shop dates:    {date_count[0][0]}")
 
 
 def main():
@@ -186,7 +183,7 @@ def main():
     parser, args = args_setup()
 
     #~ Create connection using psycopg2
-    connection, cursor = PG_ops.connect_to_postgres(db_config)
+    connection, cursor = PG_status.connect_to_postgres(db_config)
 
     create_table(
         connection,
@@ -197,9 +194,12 @@ def main():
         connection,
         cursor)
 
-    table_details(
-        connection,
-        cursor)
+    try:
+        table_details(
+            connection,
+            cursor)
+    except:
+        print("\n!!!There doesn't seem to be a table present.")
 
     connection.close()
 

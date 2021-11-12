@@ -14,7 +14,7 @@ from psycopg2 import Error
 
 #~ local imports
 import db_config
-import PG_ops
+import PG_status
 
 def args_setup():
 
@@ -192,7 +192,7 @@ def import_csv_to_pg_table(
         sys.exit(1)
 
 
-def db_details(
+def table_details(
     connection,
     cursor):
 
@@ -213,24 +213,21 @@ def db_details(
     sql_class_count = Template("""
         SELECT COUNT (DISTINCT l4y_class) FROM $table;""")
 
-    try:
-        cursor.execute(sql_record_count.substitute(table="food_products"))
-        record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="food_products"))
-        column_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table="food_products"))
-        product_count = cursor.fetchall()
-        cursor.execute(sql_department_count.substitute(table="food_products"))
-        department_count = cursor.fetchall()
-        cursor.execute(sql_class_count.substitute(table="food_products"))
-        class_count = cursor.fetchall()
-        print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
-        print(f"Columns:     {column_count[0][0]}")
-        print(f"Products:    {product_count[0][0]}")
-        print(f"Classes:     {class_count[0][0]}")
-        print(f"Departments: {department_count[0][0]}")
-    except Exception as e:
-        print(e)
+    cursor.execute(sql_record_count.substitute(table="food_products"))
+    record_count = cursor.fetchall()
+    cursor.execute(sql_column_count.substitute(table="food_products"))
+    column_count = cursor.fetchall()
+    cursor.execute(sql_product_count.substitute(table="food_products"))
+    product_count = cursor.fetchall()
+    cursor.execute(sql_department_count.substitute(table="food_products"))
+    department_count = cursor.fetchall()
+    cursor.execute(sql_class_count.substitute(table="food_products"))
+    class_count = cursor.fetchall()
+    print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
+    print(f"Columns:     {column_count[0][0]}")
+    print(f"Products:    {product_count[0][0]}")
+    print(f"Classes:     {class_count[0][0]}")
+    print(f"Departments: {department_count[0][0]}")
 
 
 def main():
@@ -244,7 +241,7 @@ def main():
     parser, args = args_setup()
 
     #~ Create connection using psycopg2
-    connection, cursor = PG_ops.connect_to_postgres(db_config)
+    connection, cursor = PG_status.connect_to_postgres(db_config)
 
     create_table(
         connection,
@@ -255,9 +252,12 @@ def main():
         connection,
         cursor)
 
-    db_details(
-        connection,
-        cursor)
+    try:
+        table_details(
+            connection,
+            cursor)
+    except:
+        print("\n!!!There doesn't seem to be a table present.")
 
     connection.close()
 
