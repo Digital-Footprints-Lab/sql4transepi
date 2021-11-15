@@ -154,21 +154,24 @@ def table_details(
     sql_date_count = Template("""
         SELECT COUNT (DISTINCT DATE2) FROM $table;""")
 
-    cursor.execute(sql_record_count.substitute(table="boots_transactions"))
-    record_count = cursor.fetchall()
-    cursor.execute(sql_column_count.substitute(table="boots_transactions"))
-    column_count = cursor.fetchall()
-    cursor.execute(sql_id_count.substitute(table="boots_transactions"))
-    id_count = cursor.fetchall()
-    cursor.execute(sql_item_count.substitute(table="boots_transactions"))
-    item_count = cursor.fetchall()
-    cursor.execute(sql_date_count.substitute(table="boots_transactions"))
-    date_count = cursor.fetchall()
-    print(f"\nboots_transactions details:\nRecords:       {record_count[0][0]}")
-    print(f"Column count:  {column_count[0][0]}")
-    print(f"Customer IDs:  {id_count[0][0]}")
-    print(f"Items:         {item_count[0][0]}")
-    print(f"Shop dates:    {date_count[0][0]}")
+    try:
+        cursor.execute(sql_record_count.substitute(table="boots_transactions"))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table="boots_transactions"))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_id_count.substitute(table="boots_transactions"))
+        id_count = cursor.fetchall()
+        cursor.execute(sql_item_count.substitute(table="boots_transactions"))
+        item_count = cursor.fetchall()
+        cursor.execute(sql_date_count.substitute(table="boots_transactions"))
+        date_count = cursor.fetchall()
+        print(f"\nboots_transactions details:\nRecords:       {record_count[0][0]}")
+        print(f"Column count:  {column_count[0][0]}")
+        print(f"Customer IDs:  {id_count[0][0]}")
+        print(f"Items:         {item_count[0][0]}")
+        print(f"Shop dates:    {date_count[0][0]}")
+    except Exception as e:
+        print("\nNo boots_transactions table present.")
 
 
 def main():
@@ -213,12 +216,9 @@ def main():
         connection,
         cursor)
 
-    try:
-        table_details(
-            connection,
-            cursor)
-    except:
-        print("\n!!!There doesn't seem to be a table present.")
+    table_details(
+        connection,
+        cursor)
 
     connection.close()
 

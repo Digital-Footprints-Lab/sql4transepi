@@ -213,22 +213,24 @@ def table_details(
     sql_class_count = Template("""
         SELECT COUNT (DISTINCT l4y_class) FROM $table;""")
 
-    cursor.execute(sql_record_count.substitute(table="food_products"))
-    record_count = cursor.fetchall()
-    cursor.execute(sql_column_count.substitute(table="food_products"))
-    column_count = cursor.fetchall()
-    cursor.execute(sql_product_count.substitute(table="food_products"))
-    product_count = cursor.fetchall()
-    cursor.execute(sql_department_count.substitute(table="food_products"))
-    department_count = cursor.fetchall()
-    cursor.execute(sql_class_count.substitute(table="food_products"))
-    class_count = cursor.fetchall()
-    print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
-    print(f"Columns:     {column_count[0][0]}")
-    print(f"Products:    {product_count[0][0]}")
-    print(f"Classes:     {class_count[0][0]}")
-    print(f"Departments: {department_count[0][0]}")
-
+    try:
+        cursor.execute(sql_record_count.substitute(table="food_products"))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_column_count.substitute(table="food_products"))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_product_count.substitute(table="food_products"))
+        product_count = cursor.fetchall()
+        cursor.execute(sql_department_count.substitute(table="food_products"))
+        department_count = cursor.fetchall()
+        cursor.execute(sql_class_count.substitute(table="food_products"))
+        class_count = cursor.fetchall()
+        print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
+        print(f"Columns:     {column_count[0][0]}")
+        print(f"Products:    {product_count[0][0]}")
+        print(f"Classes:     {class_count[0][0]}")
+        print(f"Departments: {department_count[0][0]}")
+    except Exception as e:
+        print("\nNo food_products table present.")
 
 def main():
 
@@ -252,12 +254,9 @@ def main():
         connection,
         cursor)
 
-    try:
-        table_details(
-            connection,
-            cursor)
-    except:
-        print("\n!!!There doesn't seem to be a table present.")
+    table_details(
+        connection,
+        cursor)
 
     connection.close()
 

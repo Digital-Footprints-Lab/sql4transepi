@@ -23,6 +23,23 @@ import CSV2PG_boots_scrape
 import CSV2PG_foodproducts
 
 
+def args_setup():
+
+    parser = argparse.ArgumentParser(
+        description = "PostgreSQL DB Status Reporter",
+        epilog = "Example: python PG_status.py --details")
+    parser.add_argument(
+        "--details", action = "store_true",
+        help = "Provide DB and table information.")
+    parser.add_argument(
+        "--drop_table", action = "store",
+        help = "Delete table from DB. Be careful, this operation is permanent.")
+
+    args = parser.parse_args()
+
+    return parser, args
+
+
 def connect_to_postgres(db_config):
 
     """
@@ -76,40 +93,63 @@ def db_details(host, user):
 
 
 def drop_table(table):
-    pass
+
+    print(f"Dropping table '{table}'...")
+    #~ Create connection using psycopg2
+    connection, cursor = connect_to_postgres(db_config)
+
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+
+    try:
+        cursor.execute(sql_record_count.substitute(table=table))
+    except Exception as e:
+        print(f"\n!!! There is no table called '{table}' currently in the DB.")
+        return 1
+
+    sql = Template(f"""DROP TABLE IF EXISTS $table;""")
+
+    try:
+        cursor.execute(sql.substitute(table=table))
+        connection.commit()
+        print("OK, table dropped.")
+    except Exception as e:
+        print("Problem dropping table:", e)
 
 
 def main():
 
+    parser, args = args_setup()
+    if len(sys.argv) < 2:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     #~ Create connection using psycopg2
     connection, cursor = connect_to_postgres(db_config)
+
     try:
         db_names, db_pretty = db_details(
             db_config.config["host"],
             db_config.config["user"],)
-        print(f"\nPostgres currently contains {len(db_names)} DBs: \n{db_pretty}\n")
+        if len(db_names) == 1:
+            print(f"\nPostgres currently contains 1 DB: \n{db_pretty}\n")
+        else:
+            print(f"\nPostgres currently contains {len(db_names)} DBs: \n{db_pretty}\n")
     except Exception as e:
         print(e)
 
-    #! why isn't this working? is fine if they are all fine,
-    #! but says they all fail if one fails <----
     #~ Query the status of the default tables
-    try:
-        CSV2PG_tesco_card.table_details(connection, cursor)
-    except Exception as e:
-        print("No Tescos Loyalty Card table present.")
-    try:
-        CSV2PG_boots_card.table_details(connection, cursor)
-    except Exception as e:
-        print("No Boots Loyalty Card table present.")
-    try:
-        CSV2PG_boots_scrape.table_details(connection, cursor)
-    except Exception as e:
-        print("No Boots products table present.")
-    try:
-        CSV2PG_foodproducts.table_details(connection, cursor)
-    except Exception as e:
-        print("No foodproducts table present.")
+    if args.details:
+        #~ we have to refresh the connection after each check,
+        #~ thus the loop doing a connect each time.
+        for func in [CSV2PG_tesco_card, CSV2PG_boots_card,
+                     CSV2PG_boots_scrape, CSV2PG_foodproducts]:
+            func.table_details(connection, cursor)
+            connection, cursor = connect_to_postgres(db_config)
+
+    if args.drop_table:
+        drop_table(args.drop_table)
 
 
 if __name__ == "__main__":

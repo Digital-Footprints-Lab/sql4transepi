@@ -137,19 +137,21 @@ def table_details(
     sql_product_count = Template("""
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
-    cursor.execute(sql_column_count.substitute(table="boots_products"))
-    column_count = cursor.fetchall()
-    cursor.execute(sql_record_count.substitute(table="boots_products"))
-    record_count = cursor.fetchall()
-    cursor.execute(sql_product_count.substitute(table="boots_products"))
-    product_count = cursor.fetchall()
-    print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
-    print(f"Records:     {record_count[0][0]}")
-    print(f"Products:    {product_count[0][0]}")
-    if record_count[0][0] != product_count[0][0]:
-        discrepancy = record_count[0][0] - product_count[0][0]
-        print(f"\n!!! Note: record and product counts differ by {discrepancy}. \nThis may be due to products having null id codes?")
-
+    try:
+        cursor.execute(sql_column_count.substitute(table="boots_products"))
+        column_count = cursor.fetchall()
+        cursor.execute(sql_record_count.substitute(table="boots_products"))
+        record_count = cursor.fetchall()
+        cursor.execute(sql_product_count.substitute(table="boots_products"))
+        product_count = cursor.fetchall()
+        print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
+        print(f"Records:     {record_count[0][0]}")
+        print(f"Products:    {product_count[0][0]}")
+        if record_count[0][0] != product_count[0][0]:
+            discrepancy = record_count[0][0] - product_count[0][0]
+            print(f"\n!!! Note: record and product counts differ by {discrepancy}. \nThis may be due to products having null id codes?")
+    except Exception as e:
+        print("\nNo boots_products table present.")
 
 def main():
 
@@ -173,12 +175,9 @@ def main():
         connection,
         cursor)
 
-    try:
-        table_details(
-            connection,
-            cursor)
-    except:
-        print("\n!!!There doesn't seem to be a table present.")
+    table_details(
+        connection,
+        cursor)
 
     connection.close()
 
