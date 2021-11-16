@@ -61,13 +61,13 @@ def connect_to_postgres(db_config):
             print(f"!!! Please create the database before starting with this command:")
             print(f"\ncreatedb te_db")
         else:
-            print("\n!!! There was a problem connecting to Postgres:\n{e}")
+            print("\n!!! Problem connecting to Postgres:\n{e}")
         sys.exit(1)
 
     return connection, cursor
 
 
-def db_details(host, user):
+def db_details(cursor, host, user):
 
     """
     Checks what DBs are actually in operation here.
@@ -76,25 +76,52 @@ def db_details(host, user):
         str:    dbs as string
     """
 
-    #~ apologies for subprocess :|
-    records, _ = subprocess.Popen([
-        'psql','-lA','-F\x02','-R\x01','-h',
-        host,'-U',user ],
-        stdout=subprocess.PIPE).communicate()
-    #~ regex out the DB names.
-    db_names = re.findall(r'x01(.*?)\\x02', str(records))
-    #~ remove the default DBs
-    default_db_names = [user, "postgres", "template0", "template1", "Name"]
-    for _db in default_db_names:
-        db_names.remove(_db)
-    db_pretty = ", ".join(db_names)
+    #~ get the name of the DBs present, filtering out defaults
+    try:
+        #~ apologies for subprocess :|
+        records, _ = subprocess.Popen([
+            'psql','-lA','-F\x02','-R\x01','-h',
+            host,'-U',user ],
+            stdout=subprocess.PIPE).communicate()
+        #~ regex out the DB names.
+        db_names = re.findall(r'x01(.*?)\\x02', str(records))
+        #~ remove the default DBs
+        default_db_names = [user, "postgres", "template0", "template1", "Name"]
+        for _db in default_db_names:
+            db_names.remove(_db)
+        db_pretty = ", ".join(db_names)
+    except Exception as e:
+        print("!!! Problem getting DB details:", e)
+        return 1
+
+    if len(db_names) == 1:
+        print(f"\nPostgres is managing 1 DB: \n{db_pretty}\n")
+    else:
+        print(f"\nPostgres is managing {len(db_names)} DBs: \n{db_pretty}")
+
+    #~ get names of tables present.
+    try:
+        cursor.execute(f"""
+            SELECT * FROM information_schema.tables
+            WHERE table_schema = 'public';""")
+        result = cursor.fetchall()
+    except Exception as e:
+        print("!!! Problem getting table details:", e)
+        return 1
+
+    table_list = ""
+    for tab in result:
+        table_list = table_list + tab[2] + ", "
+    if len(table_list) == 0:
+        print(f"The database currently contains no tables.")
+    else:
+        print(f"Tables in DB te_db:\n{table_list}")
 
     return db_names, db_pretty
 
 
 def drop_table(table):
 
-    print(f"Dropping table '{table}'...")
     #~ Create connection using psycopg2
     connection, cursor = connect_to_postgres(db_config)
 
@@ -105,7 +132,7 @@ def drop_table(table):
     try:
         cursor.execute(sql_record_count.substitute(table=table))
     except Exception as e:
-        print(f"\n!!! There is no table called '{table}' currently in the DB.")
+        print(f"\n!!! There is no table called '{table}' in the DB.")
         return 1
 
     sql = Template(f"""DROP TABLE IF EXISTS $table;""")
@@ -113,9 +140,9 @@ def drop_table(table):
     try:
         cursor.execute(sql.substitute(table=table))
         connection.commit()
-        print("OK, table dropped.")
+        print("OK, table '{table}' dropped.")
     except Exception as e:
-        print("Problem dropping table:", e)
+        print("!!! Problem dropping table:", e)
 
 
 def main():
@@ -128,16 +155,10 @@ def main():
     #~ Create connection using psycopg2
     connection, cursor = connect_to_postgres(db_config)
 
-    try:
-        db_names, db_pretty = db_details(
-            db_config.config["host"],
-            db_config.config["user"],)
-        if len(db_names) == 1:
-            print(f"\nPostgres currently contains 1 DB: \n{db_pretty}\n")
-        else:
-            print(f"\nPostgres currently contains {len(db_names)} DBs: \n{db_pretty}\n")
-    except Exception as e:
-        print(e)
+    db_details(
+        cursor,
+        db_config.config["host"],
+        db_config.config["user"],)
 
     #~ Query the status of the default tables
     if args.details:
