@@ -29,8 +29,11 @@ def args_setup():
         description = "PostgreSQL DB Status Reporter",
         epilog = "Example: python PG_status.py --details")
     parser.add_argument(
-        "--details", action = "store_true",
-        help = "Provide DB and table information.")
+        "--dbs", action = "store_true",
+        help = "Provide DB information.")
+    parser.add_argument(
+        "--tables", action = "store_true",
+        help = "Provide table information.")
     parser.add_argument(
         "--drop_table", action = "store",
         help = "Delete table from DB. Be careful, this operation is permanent.")
@@ -67,14 +70,17 @@ def connect_to_postgres(db_config):
     return connection, cursor
 
 
-def db_details(cursor, host, user):
+def db_details(host, user):
 
     """
-    Checks what DBs are actually in operation here.
+    Checks details of DBs present in Postgres.
     Returns:
         list:   [dbs]
         str:    dbs as string
     """
+
+    #~ Create connection using psycopg2
+    connection, cursor = connect_to_postgres(db_config)
 
     #~ get the name of the DBs present, filtering out defaults
     try:
@@ -95,11 +101,23 @@ def db_details(cursor, host, user):
         return 1
 
     if len(db_names) == 1:
-        print(f"\nPostgres is managing 1 DB: \n{db_pretty}\n")
+        print(f"\nPostgres is managing 1 DB: \n{db_pretty}")
     else:
         print(f"\nPostgres is managing {len(db_names)} DBs: \n{db_pretty}")
 
-    #~ get names of tables present.
+
+def table_details(cursor):
+
+    """
+    Checks details of tables present in Postgres.
+    Returns:
+        list:   [dbs]
+        str:    dbs as string
+    """
+
+    #~ Create connection using psycopg2
+    connection, cursor = connect_to_postgres(db_config)
+
     try:
         cursor.execute(f"""
             SELECT * FROM information_schema.tables
@@ -113,11 +131,11 @@ def db_details(cursor, host, user):
     for tab in result:
         table_list = table_list + tab[2] + ", "
     if len(table_list) == 0:
-        print(f"The database currently contains no tables.")
+        print(f"\nThe database currently contains no tables.")
     else:
-        print(f"Tables in DB te_db:\n{table_list}")
+        print(f"\nte_db tables:\n{table_list}")
 
-    return db_names, db_pretty
+    return table_list
 
 
 def drop_table(table):
@@ -133,6 +151,7 @@ def drop_table(table):
         cursor.execute(sql_record_count.substitute(table=table))
     except Exception as e:
         print(f"\n!!! There is no table called '{table}' in the DB.")
+        table_details(cursor)
         return 1
 
     sql = Template(f"""DROP TABLE IF EXISTS $table;""")
@@ -140,7 +159,7 @@ def drop_table(table):
     try:
         cursor.execute(sql.substitute(table=table))
         connection.commit()
-        print("OK, table '{table}' dropped.")
+        print(f"OK, table '{table}' dropped.")
     except Exception as e:
         print("!!! Problem dropping table:", e)
 
@@ -148,20 +167,21 @@ def drop_table(table):
 def main():
 
     parser, args = args_setup()
+    #~ Create connection using psycopg2
+    connection, cursor = connect_to_postgres(db_config)
     if len(sys.argv) < 2:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    #~ Create connection using psycopg2
-    connection, cursor = connect_to_postgres(db_config)
+    if args.dbs:
+        db_details(
+            db_config.config["host"],
+            db_config.config["user"],)
 
-    db_details(
-        cursor,
-        db_config.config["host"],
-        db_config.config["user"],)
+        table_details(cursor)
 
     #~ Query the status of the default tables
-    if args.details:
+    if args.tables:
         #~ we have to refresh the connection after each check,
         #~ thus the loop doing a connect each time.
         for func in [CSV2PG_tesco_card, CSV2PG_boots_card,

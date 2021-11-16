@@ -126,7 +126,7 @@ def import_csv_to_pg_table(
     """Imports a CSV with columns named from the foodproducts.csv
     Tesco example dataset"""
 
-    print(f"Importing {csv.name} to Postgres table 'food_products', just a moment...")
+    print(f"\nImporting {csv.name} to Postgres table 'food_products', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)

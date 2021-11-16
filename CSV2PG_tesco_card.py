@@ -107,7 +107,7 @@ def import_csv_to_pg_table(
         print(f"!!! The csv format might not be correct?")
         sys.exit(1)
 
-
+#! refactored to PG_status
 def db_details(host, user):
 
     """

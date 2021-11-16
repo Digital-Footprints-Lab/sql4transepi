@@ -77,7 +77,7 @@ def import_csv_to_pg_table(
     """Imports a CSV with columns named from the Dunn Hunby
     Tesco example datasets"""
 
-    print(f"Importing {csv.name} to Postgres table 'dunn_humby', just a moment...")
+    print(f"\nImporting {csv.name} to Postgres table 'dunn_humby', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -116,6 +116,7 @@ def import_csv_to_pg_table(
         print(f"\n!!! Import failed: {csv.name} is not consistent with table fields.")
         print(f"!!! The csv format might not be correct, or you might be importing to the wrong table?")
         sys.exit(1)
+
 
 def db_details(
     connection,

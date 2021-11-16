@@ -69,6 +69,7 @@ def create_scrape_table(connection, cursor):
     except Exception as e:
         print(e)
 
+
 def import_scrape_csv_to_pg_table(
     csv,
     connection,
@@ -76,7 +77,7 @@ def import_scrape_csv_to_pg_table(
 
     """Imports a CSV with columns named from the Boots scraper"""
 
-    print(f"Importing {csv.name} to Postgres table 'boots_products', just a moment...")
+    print(f"\nImporting {csv.name} to Postgres table 'boots_products', just a moment...")
 
     dirname = os.path.dirname(__file__)
     csv_path = os.path.join(dirname, csv.name)
@@ -119,9 +120,7 @@ def import_scrape_csv_to_pg_table(
         sys.exit(1)
 
 
-def table_details(
-    connection,
-    cursor):
+def table_details(connection, cursor):
 
     """
     Return some information about the current state of Postgres.
@@ -152,6 +151,7 @@ def table_details(
             print(f"\n!!! Note: record and product counts differ by {discrepancy}. \nThis may be due to products having null id codes?")
     except Exception as e:
         print("\nNo boots_products table present.")
+
 
 def main():
 
