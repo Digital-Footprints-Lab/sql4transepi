@@ -192,14 +192,14 @@ def main():
     with codecs.open(args.input.name, "rb") as input_file:
         encoding = chardet.detect(input_file.read())
     if encoding["encoding"] == "UTF-16":
-        print(f"Input file {args.input.name} detected as UTF-16: converting to UTF-8.")
+        print(f"\nInput file {args.input.name} detected as UTF-16: converting to UTF-8.")
         with codecs.open(args.input.name, "r", encoding="utf-16") as input_file:
             card_file_contents = input_file.read()
             utf8_card_file_contents = card_file_contents.replace("\t", ",")
             with codecs.open(outfile_name, "w", encoding="utf-8") as output_file:
                 output_file.write(utf8_card_file_contents)
     else:
-        print(f"Input file {args.input.name} detected as UTF-8.")
+        print(f"\nInput file {args.input.name} detected as UTF-8.")
         with codecs.open(args.input.name, "r") as input_file:
             card_file_contents = input_file.read()
             utf8_card_file_contents = card_file_contents.replace("\t", ",")

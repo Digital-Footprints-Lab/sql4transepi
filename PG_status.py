@@ -27,13 +27,13 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description = "PostgreSQL DB Status Reporter",
-        epilog = "Example: python PG_status.py --details")
-    parser.add_argument(
-        "--dbs", action = "store_true",
-        help = "Provide DB information.")
+        epilog = "Example: python PG_status.py --tables")
     parser.add_argument(
         "--tables", action = "store_true",
         help = "Provide table information.")
+    parser.add_argument(
+        "--connection", action = "store_true",
+        help = "Provide DB connection information.")
     parser.add_argument(
         "--drop_table", action = "store",
         help = "Delete table from DB. Be careful, this operation is permanent.")
@@ -101,9 +101,14 @@ def db_details(host, user):
         return 1
 
     if len(db_names) == 1:
-        print(f"\nPostgres is managing 1 DB: \n{db_pretty}")
+        print(f"Postgres is managing 1 DB: \n{db_pretty}")
     else:
-        print(f"\nPostgres is managing {len(db_names)} DBs: \n{db_pretty}")
+        print(f"Postgres is managing {len(db_names)} DBs: \n{db_pretty}")
+
+
+# def connection_details(connection):
+
+#     print(f"DB connection details:\n", connection.get_dsn_parameters())
 
 
 def table_details(cursor):
@@ -127,13 +132,14 @@ def table_details(cursor):
         print("!!! Problem getting table details:", e)
         return 1
 
-    table_list = ""
+    table_list = []
     for tab in result:
-        table_list = table_list + tab[2] + ", "
+        table_list.append(tab[2])
     if len(table_list) == 0:
         print(f"\nThe database currently contains no tables.")
     else:
-        print(f"\nte_db tables:\n{table_list}")
+        print(f"\nte_db contains the following tables:")
+        print(*table_list, sep="\n")
 
     return table_list
 
@@ -167,18 +173,19 @@ def drop_table(table):
 def main():
 
     parser, args = args_setup()
+
     #~ Create connection using psycopg2
     connection, cursor = connect_to_postgres(db_config)
+
     if len(sys.argv) < 2:
         parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    if args.dbs:
+        print("\n" + 42 * "=")
         db_details(
             db_config.config["host"],
             db_config.config["user"],)
-
         table_details(cursor)
+        print(42 * "=")
+        sys.exit(0)
 
     #~ Query the status of the default tables
     if args.tables:
@@ -188,6 +195,12 @@ def main():
                      CSV2PG_boots_scrape, CSV2PG_foodproducts]:
             func.table_details(connection, cursor)
             connection, cursor = connect_to_postgres(db_config)
+
+    if args.connection:
+        connection_details = connection.get_dsn_parameters()
+        print(f"\nDB connection details:\n")
+        for thing in connection_details:
+            print (thing, ":", connection_details[thing])
 
     if args.drop_table:
         drop_table(args.drop_table)
