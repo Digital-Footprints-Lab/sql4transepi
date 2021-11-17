@@ -106,11 +106,6 @@ def db_details(host, user):
         print(f"Postgres is managing {len(db_names)} DBs: \n{db_pretty}")
 
 
-# def connection_details(connection):
-
-#     print(f"DB connection details:\n", connection.get_dsn_parameters())
-
-
 def table_details(cursor):
 
     """
