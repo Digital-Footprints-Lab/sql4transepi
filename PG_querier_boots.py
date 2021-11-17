@@ -64,6 +64,40 @@ def output_type(record_type, result):
         print(result[0][0])
 
 
+def write_to_csv(filename, records, join=None):
+
+    fields = [
+        "ID",
+        "DATE2",
+        "TIME3",
+        "STORE",
+        "PAYMENT",
+        "STAFF_DISCOUNT_CARD_NUMBER",
+        "ITEM_CODE",
+        "ITEM_DESCRIPTION","POINTS_ADJUSTMENT",
+        "POINTS_ITEM","UNITS",
+        "SPEND",
+        "DISCOUNT",]
+
+    join_fields = [
+        "index",
+        "product_link",
+        "productid",
+        "name",
+        "PDP_productPrice",
+        "details",
+        "long_description",]
+
+    if join:
+        fields.extend(join_fields)
+
+    with open(filename, "w") as file:
+
+        write = csv.writer(file)
+        write.writerow(fields)
+        write.writerows(records)
+
+
 #~ QUERIES FUNCTIONS start #################################
 def all_records_from_product(
     product,
