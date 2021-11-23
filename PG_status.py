@@ -184,15 +184,16 @@ def main():
 
     #~ Query the status of the default tables
     if args.tables:
-        #~ we have to refresh the connection after each check,
-        #~ thus the loop doing a connect each time.
         for func in [CSV2PG_tesco_card, CSV2PG_boots_card,
                      CSV2PG_boots_scrape, CSV2PG_foodproducts]:
+            print("\n" + 42 * "=")
             func.table_details(connection, cursor)
+            #~ we have to refresh the connection after each check, unsure why.
             connection, cursor = connect_to_postgres(db_config)
 
     if args.connection:
         connection_details = connection.get_dsn_parameters()
+        print("\n" + 42 * "=")
         print(f"\nDB connection details:\n")
         for thing in connection_details:
             print (thing, ":", connection_details[thing])
