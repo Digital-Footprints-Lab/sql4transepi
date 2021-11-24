@@ -47,19 +47,21 @@ You will now be ready to use these scripts.
 
 All scripts provide full help details by adding the flag `--help`, for example
 
-```python CSV2PG_boots_card.py --help```
+`python CSV2PG_boots_card.py --help`
 
 A status-reporting script is included, which can return technical details of the database, tables, and the connection to the working database:
 
-```python PG_status.py```
+`python PG_status.py`
 
 #### • Data importing scripts 
 All of the scripts named starting with `CSV2PG` import comma separated values files into Postgres. The data they can import are Boots Advantage loyalty cards, Boots product details (from the scraper associated with this project github.com/altanner/snax2), Tescos Clubcard loyalty cards, as well as testing datasets - these are all run by specifying the file to import (the `my_data.csv` below will need to match the file you are importing):
 
-```python CSV2PG_boots_card.py -i my_data.csv
+```
+python CSV2PG_boots_card.py -i my_data.csv
 python CSV2PG_boots_scrape.py -i my_data.csv
 python CSV2PG_tesco_card.py -i my_data.csv
-python CSV2PG_foodproducts.py -i my_data.csv```
+python CSV2PG_foodproducts.py -i my_data.csv
+```
 
 These will report what they have done, and the status of the database after import.
 
@@ -69,5 +71,7 @@ Tescos loyalty card data is provided as nested JSON. This script creates a CSV, 
 ```python tesco_card_JSON2CSV.py -i my_tesco_data210929.json```
 
 #### • Database query scripts 
+All scripts named starting with `PG_querier` are for returning data in the database in response to queries that you build by providing flags.
+
 
 
