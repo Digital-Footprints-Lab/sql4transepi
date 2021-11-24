@@ -170,19 +170,34 @@ def customer_records_all(
     customer,
     record_type,
     cursor,
-    connection):
-
-    sql = Template("""
-        SELECT $record_type FROM $table
-        WHERE ID = '$customer';""")
+    connection,
+    join=False):
 
     try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            table = "boots_transactions",
-            customer = customer))
-        result = cursor.fetchall()
-        output_type(record_type, result)
+        if join:
+            sql = Template("""
+                SELECT $record_type FROM $table
+                INNER JOIN $product_table
+                ON $card_table.ITEM_CODE = $product_table.productid
+                WHERE ID = '$customer';""")
+            cursor.execute(sql.substitute(
+                record_type = record_type,
+                card_table = "boots_transactions",
+                product_table = "boots_products",
+                table = "boots_transactions",
+                customer = customer))
+            result = cursor.fetchall()
+            output_type(record_type, result)
+        else:
+            sql = Template("""
+                SELECT $record_type FROM $table
+                WHERE ID = '$customer';""")
+            cursor.execute(sql.substitute(
+                record_type = record_type,
+                table = "boots_transactions",
+                customer = customer))
+            result = cursor.fetchall()
+            output_type(record_type, result)
     except Exception as e:
         print(e)
 
@@ -402,6 +417,10 @@ def main():
         if args.spend:
             record_type = "SUM(SPEND)"
 
+        join = False
+        if args.join:
+            join = True
+
     #~ three args ##########################################
         if args.customer and args.date and args.product:
             customer_records_for_product_from_date(
@@ -452,7 +471,8 @@ def main():
                 args.customer,
                 record_type,
                 cursor,
-                connection)
+                connection,
+                join)
             connection.close()
             return
 
@@ -483,7 +503,6 @@ def main():
                     connection)
                 connection.close()
                 return
-
 
         if args.join:
             join_on_product_id(
