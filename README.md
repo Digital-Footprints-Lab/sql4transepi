@@ -11,18 +11,30 @@ Python scripts for building and querying PostgreSQL databases. These are designe
 1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
 
 `git clone https://github.com/altanner/sql4transepi.git`
+and move into the repository folder:
+`cd sql4transepi`
 
 2. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
 
-3. Create a database called "te_db" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
+3. Create a database called "TE_DB" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
 
-`createdb te_db`
+`createdb TE_DB`
 
 If you get a `role does not exist` error, run this command to make yourself the owner of the database:
 
 `sudo -u postgres createuser --superuser $USER`
 
-4. Have Python >= 3.8 installed, and install the `requirements.txt` file to acquire the dependencies
+4. Have Python >= 3.8 installed, and create a fresh virtual environment. This command create a folder with clean Python binaries which we can then update to be streamlined for these scripts:
+
+`python -m venv ./venv`
+
+5. activate your clean Python with
+
+`source ./venv/bin/activate`
+
+(to leave this virtual environment, go `deactivate`)
+
+6. finally, install the `requirements.txt` file to get your libraries into this fresh Python
 
 `pip install -r requirements.txt`
 
