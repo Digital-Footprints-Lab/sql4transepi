@@ -431,9 +431,9 @@ def main():
             connection = psycopg2.connect(**db_config.config)
         except psycopg2.OperationalError as e:
             if str(e).__contains__("does not exist"):
-                print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+                print(f"\n!!! Default transactional epidemiology DB (TE_DB) not found.")
                 print(f"!!! Please create the database before starting with this command:")
-                print(f"\ncreatedb te_db")
+                print(f"\ncreatedb TE_DB")
             else:
                 print("\n!!! There was a problem connecting to Postgres:\n{e}")
             sys.exit(1)
@@ -456,7 +456,7 @@ def main():
             if len(table_list) == 0:
                 print(f"The database currently contains no tables.")
             else:
-                print(f"Tables currently in DB te_db: {table_list}")
+                print(f"Tables currently in TE_DB: {table_list}")
             sys.exit(1)
 
         if args.details:

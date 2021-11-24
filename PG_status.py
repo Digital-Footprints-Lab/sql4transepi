@@ -60,9 +60,9 @@ def connect_to_postgres(db_config):
         cursor = connection.cursor()
     except psycopg2.OperationalError as e:
         if str(e).__contains__("does not exist"):
-            print(f"\n!!! Default transactional epidemiology DB (te_db) not found.")
+            print(f"\n!!! Default transactional epidemiology DB (TE_DB) not found.")
             print(f"!!! Please create the database before starting with this command:")
-            print(f"\ncreatedb te_db")
+            print(f"\ncreatedb TE_DB")
         else:
             print("\n!!! Problem connecting to Postgres:\n{e}")
         sys.exit(1)
@@ -133,7 +133,7 @@ def table_details(cursor):
     if len(table_list) == 0:
         print(f"\nThe database currently contains no tables.")
     else:
-        print(f"\nte_db contains the following tables:")
+        print(f"\nTE_DB contains the following tables:")
         print(*table_list, sep="\n")
 
     return table_list
@@ -184,6 +184,7 @@ def main():
 
     #~ Query the status of the default tables
     if args.tables:
+        table_details(cursor)
         for func in [CSV2PG_tesco_card, CSV2PG_boots_card,
                      CSV2PG_boots_scrape, CSV2PG_foodproducts]:
             print("\n" + 42 * "=")

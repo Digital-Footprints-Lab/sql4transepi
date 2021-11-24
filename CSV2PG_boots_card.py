@@ -42,17 +42,21 @@ def args_setup():
 def create_table(connection, cursor):
 
     """Create a table consistent with CSVs returned from Boot
-    after an information request."""
+    after an information request.
+
+    Fields which you might think would be INT are VARCHAR because
+    they sometimes start with 0s, which we want to preserve.
+    """
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
-        ID BIGINT,
+        ID VARCHAR,
         DATE2 DATE,
         TIME3 TIME,
         STORE VARCHAR,
         PAYMENT VARCHAR,
-        STAFF_DISCOUNT_CARD_NUMBER INT,
-        ITEM_CODE INT,
+        STAFF_DISCOUNT_CARD_NUMBER VARCHAR,
+        ITEM_CODE VARCHAR,
         ITEM_DESCRIPTION VARCHAR,
         POINTS_ADJUSTMENT INT,
         POINTS_ITEM REAL,

@@ -35,8 +35,8 @@ def args_setup():
         "--product", action = "store",
         help = "Product code to query. Format: 8199922")
     parser.add_argument(
-        "--date", action = "store",
-        help = "Shop date to query. Format: YYYYMMDD")
+        "--date", nargs = "+", action = "store",
+        help = "Shop date (or date range) to query. Format: YYYYMMDD (provide two dates for a range)")
     parser.add_argument(
         "--count", action = "store_true",
         help = "Return total record counts.")
@@ -141,6 +141,30 @@ def all_records_from_date(
         print(e)
 
 
+def all_records_from_date_range(
+    start_date,
+    end_date,
+    record_type,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT $record_type FROM $table
+        WHERE DATE2 >= '$start_date'
+        AND DATE2 <= '$end_date';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            start_date = start_date,
+            end_date = end_date))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
 #~ CUSTOMER queries #################################
 def customer_records_all(
     customer,
@@ -205,6 +229,33 @@ def customer_records_from_date(
             table = "boots_transactions",
             customer = customer,
             date = date))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_from_date_range(
+    customer,
+    start_date,
+    end_date,
+    record_type,
+    cursor,
+    connection):
+
+    sql = Template("""
+        SELECT $record_type FROM $table
+        WHERE DATE2 >= '$start_date'
+        AND DATE2 <= '$end_date'
+        AND ID = '$customer';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            table = "boots_transactions",
+            customer = customer,
+            start_date = start_date,
+            end_date = end_date))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -340,10 +391,6 @@ def main():
                 connection)
             sys.exit(0)
 
-        # if len(sys.argv) < 6:
-        #     parser.print_help(sys.stderr)
-        #     print(f"\n!!! Your query request was incomplete, see above for help.")
-        #     sys.exit(1)
         #~ if args.count is not included, SELECTs will be for all records,
         #~ flip this to COUNT or SPEND if args request
         record_type = "*"
@@ -369,14 +416,25 @@ def main():
 
     #~ two args #########################################
         if args.customer and args.date:
-            customer_records_from_date(
-                args.customer,
-                args.date,
-                record_type,
-                cursor,
-                connection)
-            connection.close()
-            return
+            if len(args.date) == 1:
+                customer_records_from_date(
+                    args.customer,
+                    args.date[0],
+                    record_type,
+                    cursor,
+                    connection)
+                connection.close()
+                return
+            if len(args.date) == 2:
+                customer_records_from_date_range(
+                    args.customer,
+                    args.date[0],
+                    args.date[1],
+                    record_type,
+                    cursor,
+                    connection)
+                connection.close()
+                return
 
         if args.customer and args.product:
             customer_records_for_product(
@@ -408,13 +466,24 @@ def main():
             return
 
         if args.date:
-            all_records_from_date(
-                args.date,
-                record_type,
-                cursor,
-                connection)
-            connection.close()
-            return
+            if len(args.date) == 1:
+                all_records_from_date(
+                    args.date[0],
+                    record_type,
+                    cursor,
+                    connection)
+                connection.close()
+                return
+            if len(args.date) == 2:
+                all_records_from_date_range(
+                    args.date[0],
+                    args.date[1],
+                    record_type,
+                    cursor,
+                    connection)
+                connection.close()
+                return
+
 
         if args.join:
             join_on_product_id(

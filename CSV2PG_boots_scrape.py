@@ -34,14 +34,17 @@ def args_setup():
 def create_scrape_table(connection, cursor):
 
     """Create a table consistent with the column names
-    for the Boots scraper"""
+    for the Boots scraper
+
+    Some fields are VARCHAR rather than INT to preserve
+    leading 0s"""
 
     #! PRICE as VARCHAR is a workaround given "£" in price.
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
-        IDX1 INT,
+        IDX1 VARCHAR,
         PRODUCT_LINK VARCHAR,
-        PRODUCTID INT UNIQUE,
+        PRODUCTID VARCHAR UNIQUE,
         NAME VARCHAR,
         PRICE VARCHAR,
         DETAILS VARCHAR,
