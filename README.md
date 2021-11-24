@@ -28,7 +28,7 @@ If you get a `role does not exist` error, run this command to make yourself the 
 
 4. Have Python >= 3.8 installed, and create a fresh virtual environment. This command creates a folder with clean Python binaries which we can then update to be streamlined for these scripts:
 
-`python -m venv ./venv`
+`python3 -m venv ./venv`
 
 5. activate this clean Python with
 
