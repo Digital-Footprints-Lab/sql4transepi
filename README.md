@@ -11,7 +11,9 @@ Python scripts for building and querying PostgreSQL databases. These are designe
 1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
 
 `git clone https://github.com/altanner/sql4transepi.git`
+
 and move into the repository folder:
+
 `cd sql4transepi`
 
 2. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
@@ -28,11 +30,11 @@ If you get a `role does not exist` error, run this command to make yourself the 
 
 `python -m venv ./venv`
 
-5. activate your clean Python with
+5. activate this clean Python with
 
 `source ./venv/bin/activate`
 
-(to leave this virtual environment, go `deactivate`)
+(to leave this virtual environment, type `deactivate`)
 
 6. finally, install the `requirements.txt` file to get your libraries into this fresh Python
 
