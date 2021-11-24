@@ -103,7 +103,7 @@ def all_records_from_product(
     product,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -112,6 +112,8 @@ def all_records_from_product(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             product = product))
         result = cursor.fetchall()
@@ -124,7 +126,7 @@ def all_records_from_date(
     date,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -133,6 +135,8 @@ def all_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             date = date))
         result = cursor.fetchall()
@@ -146,7 +150,7 @@ def all_records_from_date_range(
     end_date,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -156,6 +160,8 @@ def all_records_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             start_date = start_date,
             end_date = end_date))
@@ -171,33 +177,30 @@ def customer_records_all(
     record_type,
     cursor,
     connection,
-    join=False):
+    join=False,):
 
     try:
+
         if join:
             sql = Template("""
                 SELECT $record_type FROM $table
                 INNER JOIN $product_table
                 ON $card_table.ITEM_CODE = $product_table.productid
                 WHERE ID = '$customer';""")
-            cursor.execute(sql.substitute(
-                record_type = record_type,
-                card_table = "boots_transactions",
-                product_table = "boots_products",
-                table = "boots_transactions",
-                customer = customer))
-            result = cursor.fetchall()
-            output_type(record_type, result)
         else:
             sql = Template("""
                 SELECT $record_type FROM $table
                 WHERE ID = '$customer';""")
-            cursor.execute(sql.substitute(
-                record_type = record_type,
-                table = "boots_transactions",
-                customer = customer))
-            result = cursor.fetchall()
-            output_type(record_type, result)
+
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+
     except Exception as e:
         print(e)
 
@@ -207,16 +210,28 @@ def customer_records_for_product(
     product,
     record_type,
     cursor,
-    connection):
+    connection,
+    join=False,):
 
-    sql = Template("""
-        SELECT $record_type FROM $table
-        WHERE ID = '$customer'
-        AND ITEM_CODE = '$product';""")
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            INNER JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ID = '$customer'
+            AND ITEM_CODE = '$product';""")
+
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ID = '$customer'
+            AND ITEM_CODE = '$product';""")
 
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             customer = customer,
             product = product))
@@ -231,7 +246,7 @@ def customer_records_from_date(
     date,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -241,6 +256,8 @@ def customer_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             customer = customer,
             date = date))
@@ -256,7 +273,7 @@ def customer_records_from_date_range(
     end_date,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -267,6 +284,8 @@ def customer_records_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             customer = customer,
             start_date = start_date,
@@ -284,7 +303,7 @@ def customer_records_for_product_from_date(
     product,
     record_type,
     cursor,
-    connection):
+    join=False,):
 
     sql = Template("""
         SELECT $record_type FROM $table
@@ -295,6 +314,8 @@ def customer_records_for_product_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
             table = "boots_transactions",
             customer = customer,
             date = date,
@@ -309,7 +330,7 @@ def join_on_product_id(
     record_type,
     product_table,
     cursor,
-    connection):
+    join=False,):
 
     """
     The card transaction table contains each item purchased, but without
@@ -337,7 +358,7 @@ def join_on_product_id(
 #~ GENERAL STATUS QUERY ##############################
 def db_details(
     cursor,
-    connection):
+    join=False,):
 
     """
     Return some information about the current state of Postgres.
@@ -403,7 +424,7 @@ def main():
             args.join]):
             db_details(
                 cursor,
-                connection)
+                connection,)
             sys.exit(0)
 
         #~ if args.count is not included, SELECTs will be for all records,
@@ -429,7 +450,8 @@ def main():
                 args.product,
                 record_type,
                 cursor,
-                connection)
+                connection,
+                join,)
             connection.close()
             return
 
@@ -441,7 +463,8 @@ def main():
                     args.date[0],
                     record_type,
                     cursor,
-                    connection)
+                    connection,
+                    join,)
                 connection.close()
                 return
             if len(args.date) == 2:
@@ -451,7 +474,8 @@ def main():
                     args.date[1],
                     record_type,
                     cursor,
-                    connection)
+                    connection,
+                    join,)
                 connection.close()
                 return
 
@@ -461,7 +485,8 @@ def main():
                 args.product,
                 record_type,
                 cursor,
-                connection)
+                connection,
+                join,)
             connection.close()
             return
 
@@ -481,7 +506,8 @@ def main():
                 args.product,
                 record_type,
                 cursor,
-                connection)
+                connection,
+                join,)
             connection.close()
             return
 
@@ -491,7 +517,8 @@ def main():
                     args.date[0],
                     record_type,
                     cursor,
-                    connection)
+                    connection,
+                    join,)
                 connection.close()
                 return
             if len(args.date) == 2:
@@ -500,18 +527,20 @@ def main():
                     args.date[1],
                     record_type,
                     cursor,
-                    connection)
+                    connection,
+                    join,)
                 connection.close()
                 return
 
-        if args.join:
-            join_on_product_id(
-                record_type,
-                args.product_table,
-                cursor,
-                connection)
-            connection.close()
-            return
+        # if args.join:
+        #     join_on_product_id(
+        #         record_type,
+        #         args.product_table,
+        #         cursor,
+        #         connection,
+        #         join,)
+        #     connection.close()
+        #     return
 
     except KeyboardInterrupt:
         print("OK, stopping.")
