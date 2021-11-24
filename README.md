@@ -54,7 +54,7 @@ A status-reporting script is included, which can return technical details of the
 `python PG_status.py`
 
 #### • Data importing scripts 
-All of the scripts named starting with `CSV2PG` import comma separated values files into Postgres. The data they can import are Boots Advantage loyalty cards, Boots product details (from the scraper associated with this project github.com/altanner/snax2), Tescos Clubcard loyalty cards, as well as testing datasets - these are all run by specifying the file to import (the `my_data.csv` below will need to match the file you are importing):
+All of the scripts named starting with `CSV2PG` import comma separated values files into Postgres. The data they can import are Boots Advantage loyalty cards, Boots product details (from the [scraper associated with this project](github.com/altanner/snax2)), Tescos Clubcard loyalty cards, as well as testing datasets - these are all run by specifying the file to import (the `my_data.csv` below will need to match the file you are importing):
 
 ```
 python CSV2PG_boots_card.py -i my_data.csv
