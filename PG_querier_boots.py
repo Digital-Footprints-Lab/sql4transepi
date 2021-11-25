@@ -101,9 +101,13 @@ def write_to_csv(filename, records, join=None,):
         write.writerows(records)
 
 
-#~ QUERIES FUNCTIONS start #################################
-def all_records_from_product(
+#~ QUERIES FUNCTIONS start #########################
+#~ FOUR query args #################################
+def customer_records_for_product_from_date_from_store(
+    customer,
+    date,
     product,
+    store,
     record_type,
     cursor,
     connection,
@@ -114,11 +118,17 @@ def all_records_from_product(
             SELECT $record_type FROM $table
             LEFT JOIN $product_table
             ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ITEM_CODE = '$product';""")
+            WHERE DATE2 = '$date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
     else:
         sql = Template("""
             SELECT $record_type FROM $table
-            WHERE ITEM_CODE = '$product';""")
+            WHERE DATE2 = '$date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
 
     try:
         cursor.execute(sql.substitute(
@@ -126,14 +136,67 @@ def all_records_from_product(
             card_table = "boots_transactions",
             product_table = "boots_products",
             table = "boots_transactions",
-            product = product))
+            customer = customer,
+            date = date,
+            product = product,
+            store = store,))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-def all_records_from_date(
+def customer_records_for_product_from_date_range_from_store(
+    customer,
+    start_date,
+    end_date,
+    product,
+    store,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer,
+            start_date = start_date,
+            end_date = end_date,
+            product = product,
+            store = store,))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+#~ THREE query args ################################
+def customer_records_from_store_from_date(
+    customer,
+    store,
     date,
     record_type,
     cursor,
@@ -145,11 +208,15 @@ def all_records_from_date(
             SELECT $record_type FROM $table
             LEFT JOIN $product_table
             ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date';""")
+            WHERE DATE2 = '$date'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
     else:
         sql = Template("""
             SELECT $record_type FROM $table
-            WHERE DATE2 = '$date';""")
+            WHERE DATE2 = '$date'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
 
     try:
         cursor.execute(sql.substitute(
@@ -157,14 +224,18 @@ def all_records_from_date(
             card_table = "boots_transactions",
             product_table = "boots_products",
             table = "boots_transactions",
-            date = date))
+            customer = customer,
+            date = date,
+            store = store,))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-def all_records_from_date_range(
+def customer_records_from_store_from_date_range(
+    customer,
+    store,
     start_date,
     end_date,
     record_type,
@@ -178,12 +249,16 @@ def all_records_from_date_range(
             LEFT JOIN $product_table
             ON $card_table.ITEM_CODE = $product_table.productid
             WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
+            AND DATE2 <= '$end_date'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
     else:
         sql = Template("""
             SELECT $record_type FROM $table
             WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
+            AND DATE2 <= '$end_date'
+            AND STORE LIKE '%$store%'
+            AND ID = '$customer';""")
 
     try:
         cursor.execute(sql.substitute(
@@ -191,17 +266,20 @@ def all_records_from_date_range(
             card_table = "boots_transactions",
             product_table = "boots_products",
             table = "boots_transactions",
+            customer = customer,
             start_date = start_date,
-            end_date = end_date))
+            end_date = end_date,
+            store = store,))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
-#~ CUSTOMER queries #################################
-def customer_records_all(
-    customer,
+def product_records_from_store_from_date(
+    product,
+    store,
+    date,
     record_type,
     cursor,
     connection,
@@ -212,11 +290,15 @@ def customer_records_all(
             SELECT $record_type FROM $table
             LEFT JOIN $product_table
             ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer';""")
+            WHERE DATE2 = '$date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
     else:
         sql = Template("""
             SELECT $record_type FROM $table
-            WHERE ID = '$customer';""")
+            WHERE DATE2 = '$date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
 
     try:
         cursor.execute(sql.substitute(
@@ -224,13 +306,180 @@ def customer_records_all(
             card_table = "boots_transactions",
             product_table = "boots_products",
             table = "boots_transactions",
-            customer = customer))
+            date = date,
+            product = product,
+            store = store,))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
         print(e)
 
 
+def product_records_from_store_from_date_range(
+    product,
+    store,
+    start_date,
+    end_date,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            start_date = start_date,
+            end_date = end_date,
+            product = product,
+            store = store,))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_for_product_from_store(
+    customer,
+    product,
+    store,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ID = '$customer'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ID = '$customer'
+            AND ITEM_CODE = '$product'
+            AND STORE LIKE '%$store%';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer,
+            product = product,
+            store = store,))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_for_product_from_date(
+    customer,
+    date,
+    product,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ID = '$customer'
+            AND DATE2 = '$date'
+            AND ITEM_CODE = '$product';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ID = '$customer'
+            AND DATE2 = '$date'
+            AND ITEM_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer,
+            date = date,
+            product = product))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_for_product_from_date_range(
+    customer,
+    start_date,
+    end_date,
+    product,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ID = '$customer'
+            AND DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ID = '$customer'
+            AND DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date'
+            AND ITEM_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer,
+            start_date = start_date,
+            end_date = end_date,
+            product = product,))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+#~ TWO query args ##################################
 def customer_records_for_product(
     customer,
     product,
@@ -340,178 +589,6 @@ def customer_records_from_date_range(
         print(e)
 
 
-def customer_records_for_product_from_date_from_store(
-    customer,
-    date,
-    product,
-    store,
-    record_type,
-    cursor,
-    connection,
-    join=False,):
-
-    if join:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-    try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
-            customer = customer,
-            date = date,
-            product = product,
-            store = store,))
-        result = cursor.fetchall()
-        output_type(record_type, result)
-    except Exception as e:
-        print(e)
-
-
-def customer_records_for_product_from_date_range_from_store(
-    customer,
-    start_date,
-    end_date,
-    product,
-    store,
-    record_type,
-    cursor,
-    connection,
-    join=False,):
-
-    if join:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-    try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
-            customer = customer,
-            start_date = start_date,
-            end_date = end_date,
-            product = product,
-            store = store,))
-        result = cursor.fetchall()
-        output_type(record_type, result)
-    except Exception as e:
-        print(e)
-
-#~ CUSTOMER RECORDS TEMPORALLY WITH PRODUCT ################
-def customer_records_for_product_from_date(
-    customer,
-    date,
-    product,
-    record_type,
-    cursor,
-    connection,
-    join=False,):
-
-    if join:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-
-    try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
-            customer = customer,
-            date = date,
-            product = product))
-        result = cursor.fetchall()
-        output_type(record_type, result)
-    except Exception as e:
-        print(e)
-
-
-def customer_records_for_product_from_date_range(
-    customer,
-    start_date,
-    end_date,
-    product,
-    record_type,
-    cursor,
-    connection,
-    join=False,):
-
-    if join:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-
-    try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
-            customer = customer,
-            start_date = start_date,
-            end_date = end_date,
-            product = product,))
-        result = cursor.fetchall()
-        output_type(record_type, result)
-    except Exception as e:
-        print(e)
-
-#~ PRODUCT QUERIES ###########################
 def product_records_for_date(
     product,
     date,
@@ -580,38 +657,6 @@ def product_records_for_date_range(
             product = product,
             start_date = start_date,
             end_date = end_date,))
-        result = cursor.fetchall()
-        output_type(record_type, result)
-    except Exception as e:
-        print(e)
-
-
-#~ STORE QUERIES ############################
-def store_records_all(
-    store,
-    record_type,
-    cursor,
-    connection,
-    join=False,):
-
-    if join:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%';""")
-    else:
-        sql = Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%';""")
-
-    try:
-        cursor.execute(sql.substitute(
-            record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
-            store = store))
         result = cursor.fetchall()
         output_type(record_type, result)
     except Exception as e:
@@ -762,6 +807,166 @@ def store_records_for_date_range(
         print(e)
 
 
+#~ ONE query arg ###################################
+def all_records_from_product(
+    product,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ITEM_CODE = '$product';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ITEM_CODE = '$product';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            product = product))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_date(
+    date,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE DATE2 = '$date';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE DATE2 = '$date';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            date = date))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def all_records_from_date_range(
+    start_date,
+    end_date,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE DATE2 >= '$start_date'
+            AND DATE2 <= '$end_date';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            start_date = start_date,
+            end_date = end_date))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def customer_records_all(
+    customer,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE ID = '$customer';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE ID = '$customer';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            customer = customer))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
+def store_records_all(
+    store,
+    record_type,
+    cursor,
+    connection,
+    join=False,):
+
+    if join:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            LEFT JOIN $product_table
+            ON $card_table.ITEM_CODE = $product_table.productid
+            WHERE STORE LIKE '%$store%';""")
+    else:
+        sql = Template("""
+            SELECT $record_type FROM $table
+            WHERE STORE LIKE '%$store%';""")
+
+    try:
+        cursor.execute(sql.substitute(
+            record_type = record_type,
+            card_table = "boots_transactions",
+            product_table = "boots_products",
+            table = "boots_transactions",
+            store = store))
+        result = cursor.fetchall()
+        output_type(record_type, result)
+    except Exception as e:
+        print(e)
+
+
 #~ GENERAL STATUS QUERY ##############################
 def db_details(
     cursor,
@@ -848,7 +1053,7 @@ def main():
         if args.spend:
             record_type = "SUM(SPEND)"
 
-        #~ boolean trigger for LEFT JOIN between transactions and products.
+        #~ trigger for LEFT JOIN between transactions and products.
         #~ we use LEFT JOIN because we DO want
         #~ results without matches to return with empty fields.
         join = False
@@ -856,14 +1061,14 @@ def main():
             join = True
 
         #~ store numbers are in a VARCHAR field with brackets around,
-        #~ so we want to add those brackets to avoid
+        #~ so we want to add those brackets to avoid erroneous
         #~ substring matching, say, 786 with 1786
         if args.store:
             store_w_brackets = "(" + args.store + ")"
 
-    #~ long-winded I know, but the following are the 15 combinations of
-    #~ the four possible args given (customer, store, date, product):
-    #~ four args ###########################################
+        #~ long-winded I know, but the following are the 15 combinations of
+        #~ the four possible args given (customer, store, date, product):
+        #~ four args #####################################
         if args.customer and args.date and args.product and args.store:
             if len(args.date) == 1:
                 customer_records_for_product_from_date_from_store(
@@ -891,7 +1096,7 @@ def main():
                 connection.close()
                 return
 
-    #~ three args ##########################################
+        #~ three args ####################################
         if args.customer and args.date and args.product:
             if len(args.date) == 1:
                 customer_records_for_product_from_date(
@@ -917,12 +1122,69 @@ def main():
                 connection.close()
                 return
 
-    #! cust + date + store     //no product
-    #! product + date + store  //no cust
-    #! cust + product + store  //no date
+        if args.customer and args.date and args.store:
+            if len(args.date) == 1:
+                customer_records_from_store_from_date(
+                    args.customer,
+                    store_w_brackets,
+                    args.date[0],
+                    record_type,
+                    cursor,
+                    connection,
+                    join,)
+                connection.close()
+                return
+            if len(args.date) == 2:
+                customer_records_from_store_from_date_range(
+                    args.customer,
+                    store_w_brackets,
+                    args.date[0],
+                    args.date[1],
+                    record_type,
+                    cursor,
+                    connection,
+                    join,)
+                connection.close()
+                return
 
-    #~ two args #########################################
+        if args.date and args.product and args.store:
+            if len(args.date) == 1:
+                product_records_from_store_from_date(
+                    args.product,
+                    store_w_brackets,
+                    args.date[0],
+                    record_type,
+                    cursor,
+                    connection,
+                    join,)
+                connection.close()
+                return
+            if len(args.date) == 2:
+                product_records_from_store_from_date_range(
+                    args.product,
+                    store_w_brackets,
+                    args.date[0],
+                    args.date[1],
+                    record_type,
+                    cursor,
+                    connection,
+                    join,)
+                connection.close()
+                return
 
+        if args.customer and args.product and args.store:
+            customer_records_for_product_from_store(
+                args.customer,
+                args.product,
+                store_w_brackets,
+                record_type,
+                cursor,
+                connection,
+                join,)
+            connection.close()
+            return
+
+        #~ two args ######################################
         if args.customer and args.date:
             if len(args.date) == 1:
                 customer_records_from_date(
@@ -1025,7 +1287,7 @@ def main():
                 connection.close()
                 return
 
-    #~ one arg #############################################
+        #~ one arg #######################################
         if args.customer:
             customer_records_all(
                 args.customer,
