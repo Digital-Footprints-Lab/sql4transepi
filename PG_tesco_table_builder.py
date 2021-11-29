@@ -39,8 +39,8 @@ def create_product_table(connection, cursor):
 
     sql = Template("""
         CREATE TABLE IF NOT EXISTS $table (
-        product_id INT,
-        product_name UNIQUE VARCHAR);""")
+        product_id INT UNIQUE,
+        product_name VARCHAR UNIQUE);""")
 
     try:
         cursor.execute(sql.substitute(table="tesco_products"))
@@ -49,7 +49,9 @@ def create_product_table(connection, cursor):
         print(e)
 
 
-def build_product_table(connection, cursor):
+def populate_product_table_from_transaction_table(
+    connection,
+    cursor,):
 
     """
     options:
@@ -63,14 +65,14 @@ def build_product_table(connection, cursor):
 
     #~ move each transaction item to product table on unique NAME
     sql = Template("""
-        INSERT INTO $table
-        SELECT * FROM tesco_transactions
+        INSERT INTO $table (product_name)
+        SELECT product_name FROM tesco_transactions
         ON CONFLICT DO NOTHING;""")
 
     try:
         cursor.execute(sql.substitute(table="tesco_products"))
         connection.commit()
-        print(f"\nOK, {csv.name} imported.")
+        print(f"\nOK, product names copied from transaction to products.")
     except Exception as e:
         print(e)
 
@@ -79,6 +81,10 @@ def main():
 
     #~ Create connection using psycopg2
     connection, cursor = PG_status.connect_to_postgres(db_config)
+
+    create_product_table(connection, cursor,)
+
+    populate_product_table_from_transaction_table(connection, cursor,)
 
 
 if __name__ == "__main__":

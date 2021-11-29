@@ -37,6 +37,9 @@ def args_setup():
     parser.add_argument(
         "--drop_table", action = "store",
         help = "Delete table from DB. Be careful, this operation is permanent.")
+    parser.add_argument(
+        "--drop_column", action = "store", nargs = 2,
+        help = "Delete column from table. Be careful, this operation is permanent.")
 
     args = parser.parse_args()
 
@@ -165,6 +168,34 @@ def drop_table(table):
         print("!!! Problem dropping table:", e)
 
 
+def drop_column(table, column):
+
+    #~ Create connection using psycopg2
+    connection, cursor = connect_to_postgres(db_config)
+
+    sql_record_count = Template("""
+        SELECT COUNT(*)
+        FROM $table;""")
+
+    try:
+        cursor.execute(sql_record_count.substitute(table=table))
+    except Exception as e:
+        print(f"\n!!! There is no table called '{table}' in the DB.")
+        table_details(cursor)
+        return 1
+
+    sql = Template(f"""
+        ALTER TABLE $table
+        DROP COLUMN $column;""")
+
+    try:
+        cursor.execute(sql.substitute(table=table, column=column))
+        connection.commit()
+        print(f"OK, column '{column}' from table '{table}' dropped.")
+    except Exception as e:
+        print("!!! Problem dropping column:", e)
+
+
 def main():
 
     parser, args = args_setup()
@@ -198,6 +229,9 @@ def main():
         print(f"\nDB connection details:\n")
         for thing in connection_details:
             print (thing, ":", connection_details[thing])
+
+    if args.drop_column:
+        drop_column(args.drop_column[0], args.drop_column[1])
 
     if args.drop_table:
         drop_table(args.drop_table)
