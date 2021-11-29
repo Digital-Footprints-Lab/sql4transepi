@@ -49,25 +49,32 @@ def args_setup():
     parser.add_argument(
         "--join", action = "store_true",
         help = "Return card transaction items from your query, JOINed with product information.")
+    parser.add_argument(
+        "--write_csv", action = "store",
+        help = "Write the results to a CSV file (specify the filename).")
 
     args = parser.parse_args()
 
     return parser, args
 
 
-def output_type(record_type, result,):
+def output_type(record_type, result, write_csv,):
 
     """Handles the type of record we want outputted,
     for example for standard queries we might want raw records.
     A count instead, we might want an integer."""
 
     if record_type == "*":
-        print(result)
+        if not write_csv:
+            print(result)
+        return result
     else:
-        print(result[0][0])
+        if not write_csv:
+            print(result[0][0])
+        return result[0][0]
 
 
-def write_to_csv(filename, records, join=None,):
+def write_to_csv(filename, records, join=False,):
 
     fields = [
         "ID",
@@ -99,6 +106,8 @@ def write_to_csv(filename, records, join=None,):
         write = csv.writer(file)
         write.writerow(fields)
         write.writerows(records)
+
+    print(f"OK, written {len(records)} records to {file.name}.")
 
 
 #~ QUERIES FUNCTIONS start #########################
@@ -141,7 +150,7 @@ def customer_records_for_product_from_date_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -188,7 +197,7 @@ def customer_records_for_product_from_date_range_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -228,7 +237,7 @@ def customer_records_from_store_from_date(
             date = date,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -271,7 +280,7 @@ def customer_records_from_store_from_date_range(
             end_date = end_date,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -310,7 +319,7 @@ def product_records_from_store_from_date(
             product = product,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -353,7 +362,7 @@ def product_records_from_store_from_date_range(
             product = product,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -392,7 +401,7 @@ def customer_records_for_product_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -431,7 +440,7 @@ def customer_records_for_product_from_date(
             date = date,
             product = product))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -474,7 +483,7 @@ def customer_records_for_product_from_date_range(
             end_date = end_date,
             product = product,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -510,7 +519,7 @@ def customer_records_for_product(
             customer = customer,
             product = product))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -545,7 +554,7 @@ def customer_records_from_date(
             customer = customer,
             date = date))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -584,7 +593,7 @@ def customer_records_from_date_range(
             start_date = start_date,
             end_date = end_date))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -619,7 +628,7 @@ def product_records_for_date(
             product = product,
             date = date,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -658,7 +667,7 @@ def product_records_for_date_range(
             start_date = start_date,
             end_date = end_date,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -693,7 +702,7 @@ def store_records_for_customer(
             store = store,
             customer = customer,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -728,7 +737,7 @@ def store_records_for_product(
             store = store,
             product = product,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -763,7 +772,7 @@ def store_records_for_date(
             store = store,
             date = date,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -802,7 +811,7 @@ def store_records_for_date_range(
             start_date = start_date,
             end_date = end_date,))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -834,7 +843,7 @@ def all_records_from_product(
             table = db_config.boots_transactions,
             product = product))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -865,7 +874,7 @@ def all_records_from_date(
             table = db_config.boots_transactions,
             date = date))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -900,7 +909,7 @@ def all_records_from_date_range(
             start_date = start_date,
             end_date = end_date))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -931,7 +940,7 @@ def customer_records_all(
             table = db_config.boots_transactions,
             customer = customer))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -962,7 +971,7 @@ def store_records_all(
             table = db_config.boots_transactions,
             store = store))
         result = cursor.fetchall()
-        output_type(record_type, result)
+        return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
@@ -1018,11 +1027,6 @@ def main():
 
     try:
 
-        parser, args = args_setup()
-        if len(sys.argv) < 2:
-            parser.print_help(sys.stderr)
-            sys.exit(1)
-
         #~ Create connection using psycopg2
         connection, cursor = PG_status.connect_to_postgres(db_config)
 
@@ -1056,9 +1060,13 @@ def main():
         #~ trigger for LEFT JOIN between transactions and products.
         #~ we use LEFT JOIN because we DO want
         #~ results without matches to return with empty fields.
-        join = False
-        if args.join:
-            join = True
+        # join = False
+        # if args.join:
+        #     join = True
+        # #~ trigger to write to csv file
+        # write_csv = False
+        # if args.write_csv:
+        #     write_csv = True
 
         #~ store numbers are in a VARCHAR field with brackets around,
         #~ so we want to add those brackets to avoid erroneous
@@ -1289,14 +1297,14 @@ def main():
 
         #~ one arg #######################################
         if args.customer:
-            customer_records_all(
+            return customer_records_all(
                 args.customer,
                 record_type,
                 cursor,
                 connection,
                 join)
-            connection.close()
-            return
+            # connection.close()
+            # return records
 
         if args.product:
             all_records_from_product(
@@ -1349,10 +1357,28 @@ def main():
     except Exception:
         traceback.print_exc(file = sys.stdout)
 
-    sys.exit(0)
-
 
 if __name__ == "__main__":
 
-    main()
+    parser, args = args_setup()
+    if len(sys.argv) < 2:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    #~ trigger for LEFT JOIN between transactions and products.
+    #~ we use LEFT JOIN because we DO want
+    #~ results without matches to return with empty fields.
+    join = False
+    if args.join:
+        join = True
+    #~ trigger to write to csv file
+    write_csv = False
+    if args.write_csv:
+        write_csv = True
+
+    ####~ main runner
+    records = main()
+    ################~
+
+    if args.write_csv:
+        write_to_csv(args.write_csv, records, write_csv,)
 
