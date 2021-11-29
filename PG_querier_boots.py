@@ -133,9 +133,9 @@ def customer_records_for_product_from_date_from_store(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             date = date,
             product = product,
@@ -179,9 +179,9 @@ def customer_records_for_product_from_date_range_from_store(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             start_date = start_date,
             end_date = end_date,
@@ -221,9 +221,9 @@ def customer_records_from_store_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             date = date,
             store = store,))
@@ -263,9 +263,9 @@ def customer_records_from_store_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             start_date = start_date,
             end_date = end_date,
@@ -303,9 +303,9 @@ def product_records_from_store_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             date = date,
             product = product,
             store = store,))
@@ -345,9 +345,9 @@ def product_records_from_store_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             start_date = start_date,
             end_date = end_date,
             product = product,
@@ -385,9 +385,9 @@ def customer_records_for_product_from_store(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             product = product,
             store = store,))
@@ -424,9 +424,9 @@ def customer_records_for_product_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             date = date,
             product = product))
@@ -466,9 +466,9 @@ def customer_records_for_product_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             start_date = start_date,
             end_date = end_date,
@@ -504,9 +504,9 @@ def customer_records_for_product(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             product = product))
         result = cursor.fetchall()
@@ -539,9 +539,9 @@ def customer_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             date = date))
         result = cursor.fetchall()
@@ -577,9 +577,9 @@ def customer_records_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer,
             start_date = start_date,
             end_date = end_date))
@@ -613,9 +613,9 @@ def product_records_for_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             product = product,
             date = date,))
         result = cursor.fetchall()
@@ -651,9 +651,9 @@ def product_records_for_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             product = product,
             start_date = start_date,
             end_date = end_date,))
@@ -687,9 +687,9 @@ def store_records_for_customer(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             store = store,
             customer = customer,))
         result = cursor.fetchall()
@@ -722,9 +722,9 @@ def store_records_for_product(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             store = store,
             product = product,))
         result = cursor.fetchall()
@@ -757,9 +757,9 @@ def store_records_for_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             store = store,
             date = date,))
         result = cursor.fetchall()
@@ -795,9 +795,9 @@ def store_records_for_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             store = store,
             start_date = start_date,
             end_date = end_date,))
@@ -829,9 +829,9 @@ def all_records_from_product(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             product = product))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -860,9 +860,9 @@ def all_records_from_date(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             date = date))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -894,9 +894,9 @@ def all_records_from_date_range(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             start_date = start_date,
             end_date = end_date))
         result = cursor.fetchall()
@@ -926,9 +926,9 @@ def customer_records_all(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             customer = customer))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -957,9 +957,9 @@ def store_records_all(
     try:
         cursor.execute(sql.substitute(
             record_type = record_type,
-            card_table = "boots_transactions",
-            product_table = "boots_products",
-            table = "boots_transactions",
+            card_table = db_config.boots_transactions,
+            product_table = db_config.boots_products,
+            table = db_config.boots_transactions,
             store = store))
         result = cursor.fetchall()
         output_type(record_type, result)
@@ -993,9 +993,9 @@ def db_details(
         FROM $table;""")
 
     try:
-        cursor.execute(sql_card_column_count.substitute(table = "boots_transactions"))
+        cursor.execute(sql_card_column_count.substitute(table = db_config.boots_transactions))
         card_column_count = cursor.fetchall()
-        cursor.execute(sql_card_record_count.substitute(table = "boots_transactions"))
+        cursor.execute(sql_card_record_count.substitute(table = db_config.boots_transactions))
         card_record_count = cursor.fetchall()
         cursor.execute(sql_product_column_count.substitute(table = "boots_products"))
         product_column_count = cursor.fetchall()

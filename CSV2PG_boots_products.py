@@ -51,7 +51,7 @@ def create_scrape_table(connection, cursor):
         LONG_DESCRIPTION VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table="boots_products"))
+        cursor.execute(sql.substitute(table=db_config.boots_products))
         connection.commit()
     except Exception as e:
         print(e)
@@ -111,7 +111,7 @@ def import_scrape_csv_to_pg_table(
         ON CONFLICT DO NOTHING;""")
 
     try:
-        cursor.execute(sql.substitute(table="boots_products"))
+        cursor.execute(sql.substitute(table=db_config.boots_products))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
         #~ remove the temp table
@@ -140,11 +140,11 @@ def table_details(connection, cursor):
         SELECT COUNT (DISTINCT PRODUCTID) FROM $table;""")
 
     try:
-        cursor.execute(sql_column_count.substitute(table="boots_products"))
+        cursor.execute(sql_column_count.substitute(table=db_config.boots_products))
         column_count = cursor.fetchall()
-        cursor.execute(sql_record_count.substitute(table="boots_products"))
+        cursor.execute(sql_record_count.substitute(table=db_config.boots_products))
         record_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table="boots_products"))
+        cursor.execute(sql_product_count.substitute(table=db_config.boots_products))
         product_count = cursor.fetchall()
         print(f"\nboots_products details:\nColumns:     {column_count[0][0]}")
         print(f"Records:     {record_count[0][0]}")

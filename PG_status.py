@@ -19,7 +19,7 @@ from psycopg2 import Error
 import db_config
 import CSV2PG_tesco_card
 import CSV2PG_boots_card
-import CSV2PG_boots_scrape
+import CSV2PG_boots_products
 import CSV2PG_foodproducts
 
 

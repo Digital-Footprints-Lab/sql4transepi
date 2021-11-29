@@ -65,7 +65,7 @@ def create_table(connection, cursor):
         DISCOUNT REAL);""")
 
     try:
-        cursor.execute(sql.substitute(table="boots_transactions"))
+        cursor.execute(sql.substitute(table=db_config.boots_transactions))
         connection.commit()
     except Exception as e:
         print(e)
@@ -102,7 +102,7 @@ def import_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table="boots_transactions", csv_path=csv_path))
+        cursor.execute(sql.substitute(table=db_config.boots_transactions, csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv} imported.")
     except Exception as e:
@@ -159,15 +159,15 @@ def table_details(
         SELECT COUNT (DISTINCT DATE2) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table="boots_transactions"))
+        cursor.execute(sql_record_count.substitute(table=db_config.boots_transactions))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="boots_transactions"))
+        cursor.execute(sql_column_count.substitute(table=db_config.boots_transactions))
         column_count = cursor.fetchall()
-        cursor.execute(sql_id_count.substitute(table="boots_transactions"))
+        cursor.execute(sql_id_count.substitute(table=db_config.boots_transactions))
         id_count = cursor.fetchall()
-        cursor.execute(sql_item_count.substitute(table="boots_transactions"))
+        cursor.execute(sql_item_count.substitute(table=db_config.boots_transactions))
         item_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table="boots_transactions"))
+        cursor.execute(sql_date_count.substitute(table=db_config.boots_transactions))
         date_count = cursor.fetchall()
         print(f"\nboots_transactions details:\nRecords:       {record_count[0][0]}")
         print(f"Column count:  {column_count[0][0]}")

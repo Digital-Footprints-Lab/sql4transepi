@@ -62,7 +62,7 @@ def create_table(connection, cursor):
         );""")
 
     try:
-        cursor.execute(sql.substitute(table="tesco_transactions"))
+        cursor.execute(sql.substitute(table=db_config.tesco_transactions))
         connection.commit()
     except Exception as e:
         print(e)
@@ -99,7 +99,7 @@ def import_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table="tesco_transactions", csv_path=csv_path))
+        cursor.execute(sql.substitute(table=db_config.tesco_transactions, csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
     except Exception as e:
@@ -156,15 +156,15 @@ def table_details(
         SELECT COUNT (DISTINCT time_stamp) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table="tesco_transactions"))
+        cursor.execute(sql_record_count.substitute(table=db_config.tesco_transactions))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="tesco_transactions"))
+        cursor.execute(sql_column_count.substitute(table=db_config.tesco_transactions))
         column_count = cursor.fetchall()
-        cursor.execute(sql_id_count.substitute(table="tesco_transactions"))
+        cursor.execute(sql_id_count.substitute(table=db_config.tesco_transactions))
         id_count = cursor.fetchall()
-        cursor.execute(sql_item_count.substitute(table="tesco_transactions"))
+        cursor.execute(sql_item_count.substitute(table=db_config.tesco_transactions))
         item_count = cursor.fetchall()
-        cursor.execute(sql_date_count.substitute(table="tesco_transactions"))
+        cursor.execute(sql_date_count.substitute(table=db_config.tesco_transactions))
         date_count = cursor.fetchall()
         print(f"\ntesco_transactions table details:\nRecords:       {record_count[0][0]}")
         print(f"Column count:  {column_count[0][0]}")

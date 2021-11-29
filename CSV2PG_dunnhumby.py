@@ -63,7 +63,7 @@ def create_table(connection, cursor):
         STORE_REGION VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table="dunn_humby"))
+        cursor.execute(sql.substitute(table=db_config.dunn_humby))
         connection.commit()
     except Exception as e:
         print(e)
@@ -109,7 +109,7 @@ def import_csv_to_pg_table(
         FROM '$csv_path' CSV HEADER;""")
 
     try:
-        cursor.execute(sql.substitute(table="dunn_humby", csv_path=csv_path))
+        cursor.execute(sql.substitute(table=db_config.dunn_humby, csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
     except Exception as e:
@@ -139,15 +139,15 @@ def db_details(
     sql_date_count = Template("""
         SELECT COUNT (DISTINCT SHOP_DATE) FROM $table;""")
 
-    cursor.execute(sql_record_count.substitute(table="dunn_humby"))
+    cursor.execute(sql_record_count.substitute(table=db_config.dunn_humby))
     record_count = cursor.fetchall()
-    cursor.execute(sql_column_count.substitute(table="dunn_humby"))
+    cursor.execute(sql_column_count.substitute(table=db_config.dunn_humby))
     column_count = cursor.fetchall()
-    cursor.execute(sql_cust_count.substitute(table="dunn_humby"))
+    cursor.execute(sql_cust_count.substitute(table=db_config.dunn_humby))
     cust_count = cursor.fetchall()
-    cursor.execute(sql_basket_count.substitute(table="dunn_humby"))
+    cursor.execute(sql_basket_count.substitute(table=db_config.dunn_humby))
     basket_count = cursor.fetchall()
-    cursor.execute(sql_date_count.substitute(table="dunn_humby"))
+    cursor.execute(sql_date_count.substitute(table=db_config.dunn_humby))
     date_count = cursor.fetchall()
     print(f"\ndunn_humby details:\nRecords:     {record_count[0][0]}")
     print(f"Columns:     {column_count[0][0]}")

@@ -71,7 +71,7 @@ def create_table(connection, cursor):
         l5y_subclass VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table="food_products"))
+        cursor.execute(sql.substitute(table=db_config.food_products))
         connection.commit()
     except Exception as e:
         print(e)
@@ -112,7 +112,7 @@ def create_table(connection, cursor):
         l5y_subclass VARCHAR);""")
 
     try:
-        cursor.execute(sql.substitute(table="food_products"))
+        cursor.execute(sql.substitute(table=db_config.food_products))
         connection.commit()
     except Exception as e:
         print(e)
@@ -180,7 +180,7 @@ def import_csv_to_pg_table(
         ON CONFLICT DO NOTHING;""")
 
     try:
-        cursor.execute(sql.substitute(table="food_products", csv_path=csv_path))
+        cursor.execute(sql.substitute(table=db_config.food_products, csv_path=csv_path))
         connection.commit()
         print(f"\nOK, {csv.name} imported.")
         #~ remove the temp table
@@ -214,15 +214,15 @@ def table_details(
         SELECT COUNT (DISTINCT l4y_class) FROM $table;""")
 
     try:
-        cursor.execute(sql_record_count.substitute(table="food_products"))
+        cursor.execute(sql_record_count.substitute(table=db_config.food_products))
         record_count = cursor.fetchall()
-        cursor.execute(sql_column_count.substitute(table="food_products"))
+        cursor.execute(sql_column_count.substitute(table=db_config.food_products))
         column_count = cursor.fetchall()
-        cursor.execute(sql_product_count.substitute(table="food_products"))
+        cursor.execute(sql_product_count.substitute(table=db_config.food_products))
         product_count = cursor.fetchall()
-        cursor.execute(sql_department_count.substitute(table="food_products"))
+        cursor.execute(sql_department_count.substitute(table=db_config.food_products))
         department_count = cursor.fetchall()
-        cursor.execute(sql_class_count.substitute(table="food_products"))
+        cursor.execute(sql_class_count.substitute(table=db_config.food_products))
         class_count = cursor.fetchall()
         print(f"\nfood_products details:\nRecords:     {record_count[0][0]}")
         print(f"Columns:     {column_count[0][0]}")
