@@ -150,6 +150,7 @@ def customer_records_for_product_from_date_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -197,6 +198,7 @@ def customer_records_for_product_from_date_range_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -237,6 +239,7 @@ def customer_records_from_store_from_date(
             date = date,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -280,6 +283,7 @@ def customer_records_from_store_from_date_range(
             end_date = end_date,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -319,6 +323,7 @@ def product_records_from_store_from_date(
             product = product,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -362,6 +367,7 @@ def product_records_from_store_from_date_range(
             product = product,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -401,6 +407,7 @@ def customer_records_for_product_from_store(
             product = product,
             store = store,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -440,6 +447,7 @@ def customer_records_for_product_from_date(
             date = date,
             product = product))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -483,6 +491,7 @@ def customer_records_for_product_from_date_range(
             end_date = end_date,
             product = product,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -519,6 +528,7 @@ def customer_records_for_product(
             customer = customer,
             product = product))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -554,6 +564,7 @@ def customer_records_from_date(
             customer = customer,
             date = date))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -593,6 +604,7 @@ def customer_records_from_date_range(
             start_date = start_date,
             end_date = end_date))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -628,6 +640,7 @@ def product_records_for_date(
             product = product,
             date = date,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -667,6 +680,7 @@ def product_records_for_date_range(
             start_date = start_date,
             end_date = end_date,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -702,6 +716,7 @@ def store_records_for_customer(
             store = store,
             customer = customer,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -737,6 +752,7 @@ def store_records_for_product(
             store = store,
             product = product,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -772,6 +788,7 @@ def store_records_for_date(
             store = store,
             date = date,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -811,6 +828,7 @@ def store_records_for_date_range(
             start_date = start_date,
             end_date = end_date,))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -843,6 +861,8 @@ def all_records_from_product(
             table = db_config.boots_transactions,
             product = product))
         result = cursor.fetchall()
+        connection.close()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -874,6 +894,7 @@ def all_records_from_date(
             table = db_config.boots_transactions,
             date = date))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -909,12 +930,13 @@ def all_records_from_date_range(
             start_date = start_date,
             end_date = end_date))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
 
-def customer_records_all(
+def all_records_from_customer(
     customer,
     record_type,
     cursor,
@@ -940,12 +962,13 @@ def customer_records_all(
             table = db_config.boots_transactions,
             customer = customer))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
 
 
-def store_records_all(
+def all_records_from_store(
     store,
     record_type,
     cursor,
@@ -971,6 +994,7 @@ def store_records_all(
             table = db_config.boots_transactions,
             store = store))
         result = cursor.fetchall()
+        connection.close()
         return output_type(record_type, result, write_csv,)
     except Exception as e:
         print(e)
@@ -1057,17 +1081,6 @@ def main():
         if args.spend:
             record_type = "SUM(SPEND)"
 
-        #~ trigger for LEFT JOIN between transactions and products.
-        #~ we use LEFT JOIN because we DO want
-        #~ results without matches to return with empty fields.
-        # join = False
-        # if args.join:
-        #     join = True
-        # #~ trigger to write to csv file
-        # write_csv = False
-        # if args.write_csv:
-        #     write_csv = True
-
         #~ store numbers are in a VARCHAR field with brackets around,
         #~ so we want to add those brackets to avoid erroneous
         #~ substring matching, say, 786 with 1786
@@ -1079,7 +1092,7 @@ def main():
         #~ four args #####################################
         if args.customer and args.date and args.product and args.store:
             if len(args.date) == 1:
-                customer_records_for_product_from_date_from_store(
+                return customer_records_for_product_from_date_from_store(
                     args.customer,
                     args.date[0],
                     args.product,
@@ -1088,10 +1101,8 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                customer_records_for_product_from_date_range_from_store(
+                return customer_records_for_product_from_date_range_from_store(
                     args.customer,
                     args.date[0],
                     args.date[1],
@@ -1101,13 +1112,11 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         #~ three args ####################################
         if args.customer and args.date and args.product:
             if len(args.date) == 1:
-                customer_records_for_product_from_date(
+                return customer_records_for_product_from_date(
                     args.customer,
                     args.date[0],
                     args.product,
@@ -1115,10 +1124,8 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                customer_records_for_product_from_date_range(
+                return customer_records_for_product_from_date_range(
                     args.customer,
                     args.date[0],
                     args.date[1],
@@ -1127,12 +1134,10 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         if args.customer and args.date and args.store:
             if len(args.date) == 1:
-                customer_records_from_store_from_date(
+                return customer_records_from_store_from_date(
                     args.customer,
                     store_w_brackets,
                     args.date[0],
@@ -1140,10 +1145,8 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                customer_records_from_store_from_date_range(
+                return customer_records_from_store_from_date_range(
                     args.customer,
                     store_w_brackets,
                     args.date[0],
@@ -1152,12 +1155,10 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         if args.date and args.product and args.store:
             if len(args.date) == 1:
-                product_records_from_store_from_date(
+                return product_records_from_store_from_date(
                     args.product,
                     store_w_brackets,
                     args.date[0],
@@ -1165,10 +1166,8 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                product_records_from_store_from_date_range(
+                return product_records_from_store_from_date_range(
                     args.product,
                     store_w_brackets,
                     args.date[0],
@@ -1177,11 +1176,9 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         if args.customer and args.product and args.store:
-            customer_records_for_product_from_store(
+            return customer_records_for_product_from_store(
                 args.customer,
                 args.product,
                 store_w_brackets,
@@ -1189,23 +1186,19 @@ def main():
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         #~ two args ######################################
         if args.customer and args.date:
             if len(args.date) == 1:
-                customer_records_from_date(
+                return customer_records_from_date(
                     args.customer,
                     args.date[0],
                     record_type,
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                customer_records_from_date_range(
+                return customer_records_from_date_range(
                     args.customer,
                     args.date[0],
                     args.date[1],
@@ -1213,55 +1206,45 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         if args.customer and args.product:
-            customer_records_for_product(
+            return customer_records_for_product(
                 args.customer,
                 args.product,
                 record_type,
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         if args.store and args.customer:
-            store_records_for_customer(
+            return store_records_for_customer(
                 store_w_brackets,
                 args.customer,
                 record_type,
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         if args.store and args.product:
-            store_records_for_product(
+            return store_records_for_product(
                 store_w_brackets,
                 args.product,
                 record_type,
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         if args.store and args.date:
             if len(args.date) == 1:
-                store_records_for_date(
+                return store_records_for_date(
                     store_w_brackets,
                     args.date[0],
                     record_type,
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                store_records_for_date_range(
+                return store_records_for_date_range(
                     store_w_brackets,
                     args.date[0],
                     args.date[1],
@@ -1269,22 +1252,18 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         if args.product and args.date:
             if len(args.date) == 1:
-                product_records_for_date(
+                return product_records_for_date(
                     args.product,
                     args.date[0],
                     record_type,
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                product_records_for_date_range(
+                return product_records_for_date_range(
                     args.product,
                     args.date[0],
                     args.date[1],
@@ -1292,60 +1271,48 @@ def main():
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
         #~ one arg #######################################
         if args.customer:
-            return customer_records_all(
+            return all_records_from_customer(
                 args.customer,
                 record_type,
                 cursor,
                 connection,
                 join)
-            # connection.close()
-            # return records
 
         if args.product:
-            all_records_from_product(
+            return all_records_from_product(
                 args.product,
                 record_type,
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         if args.store:
-            store_records_all(
+            return all_records_from_store(
                 store_w_brackets,
                 record_type,
                 cursor,
                 connection,
                 join,)
-            connection.close()
-            return
 
         if args.date:
             if len(args.date) == 1:
-                all_records_from_date(
+                return all_records_from_date(
                     args.date[0],
                     record_type,
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
             if len(args.date) == 2:
-                all_records_from_date_range(
+                return all_records_from_date_range(
                     args.date[0],
                     args.date[1],
                     record_type,
                     cursor,
                     connection,
                     join,)
-                connection.close()
-                return
 
     except KeyboardInterrupt:
         print("OK, stopping.")
