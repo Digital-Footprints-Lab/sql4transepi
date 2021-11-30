@@ -15,6 +15,7 @@ import psycopg2
 #~ local imports
 import db_config
 import PG_status
+import queries
 
 
 def args_setup():
@@ -109,405 +110,405 @@ def write_to_csv(filename, records, join=False,):
 
     print(f"OK, written {len(records)} records to {file.name}.")
 
-#~ QUERIES FUNCTIONS start #########################
-#~ FOUR query args #################################
-def customer_records_for_product_from_date_from_store():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-
-def customer_records_for_product_from_date_range_from_store():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-
-#~ THREE query args ################################
-def customer_records_from_store_from_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-
-def customer_records_from_store_from_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-
-def product_records_from_store_from_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-
-
-def product_records_from_store_from_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-
-
-def customer_records_for_product_from_store():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND ITEM_CODE = '$product'
-            AND STORE LIKE '%$store%';""")
-
-
-def customer_records_for_product_from_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-
-
-def customer_records_for_product_from_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-
-
-#~ TWO query args ##################################
-def customer_records_for_product():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer'
-            AND ITEM_CODE = '$product';""")
-
-
-def customer_records_from_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND ID = '$customer';""")
-
-
-def customer_records_from_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ID = '$customer';""")
-
-
-def product_records_for_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date'
-            AND ITEM_CODE = '$product';""")
-
-
-def product_records_for_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date'
-            AND ITEM_CODE = '$product';""")
-
-
-def store_records_for_customer():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%'
-            AND ID = '$customer';""")
-
-
-def store_records_for_product():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%'
-            AND ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%'
-            AND ITEM_CODE = '$product';""")
-
-
-def store_records_for_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%'
-            AND DATE2 = '$date';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%'
-            AND DATE2 = '$date';""")
-
-
-def store_records_for_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%'
-            AND DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
-
-
-#~ ONE query arg ###################################
-def all_records_from_product():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ITEM_CODE = '$product';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ITEM_CODE = '$product';""")
-
-
-def all_records_from_date():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 = '$date';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 = '$date';""")
-
-
-def all_records_from_date_range():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE DATE2 >= '$start_date'
-            AND DATE2 <= '$end_date';""")
-
-
-def all_records_from_customer():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE ID = '$customer';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE ID = '$customer';""")
-
-
-def all_records_from_store():
-
-    if join:
-        return Template("""
-            SELECT $record_type FROM $table
-            LEFT JOIN $product_table
-            ON $card_table.ITEM_CODE = $product_table.productid
-            WHERE STORE LIKE '%$store%';""")
-    else:
-        return Template("""
-            SELECT $record_type FROM $table
-            WHERE STORE LIKE '%$store%';""")
+# #~ QUERIES FUNCTIONS start #########################
+# #~ FOUR query args #################################
+# def customer_records_for_product_from_date_from_store():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+
+
+# def customer_records_for_product_from_date_range_from_store():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+
+
+# #~ THREE query args ################################
+# def customer_records_from_store_from_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+
+
+# def customer_records_from_store_from_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+
+
+# def product_records_from_store_from_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+
+
+# def product_records_from_store_from_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+
+
+# def customer_records_for_product_from_store():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ID = '$customer'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ID = '$customer'
+#             AND ITEM_CODE = '$product'
+#             AND STORE LIKE '%$store%';""")
+
+
+# def customer_records_for_product_from_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ID = '$customer'
+#             AND DATE2 = '$date'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ID = '$customer'
+#             AND DATE2 = '$date'
+#             AND ITEM_CODE = '$product';""")
+
+
+# def customer_records_for_product_from_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ID = '$customer'
+#             AND DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ID = '$customer'
+#             AND DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product';""")
+
+
+# #~ TWO query args ##################################
+# def customer_records_for_product():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ID = '$customer'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ID = '$customer'
+#             AND ITEM_CODE = '$product';""")
+
+
+# def customer_records_from_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date'
+#             AND ID = '$customer';""")
+
+
+# def customer_records_from_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ID = '$customer';""")
+
+
+# def product_records_for_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date'
+#             AND ITEM_CODE = '$product';""")
+
+
+# def product_records_for_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date'
+#             AND ITEM_CODE = '$product';""")
+
+
+# def store_records_for_customer():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE STORE LIKE '%$store%'
+#             AND ID = '$customer';""")
+
+
+# def store_records_for_product():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE STORE LIKE '%$store%'
+#             AND ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE STORE LIKE '%$store%'
+#             AND ITEM_CODE = '$product';""")
+
+
+# def store_records_for_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE STORE LIKE '%$store%'
+#             AND DATE2 = '$date';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE STORE LIKE '%$store%'
+#             AND DATE2 = '$date';""")
+
+
+# def store_records_for_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE STORE LIKE '%$store%'
+#             AND DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE STORE LIKE '%$store%'
+#             AND DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date';""")
+
+
+# #~ ONE query arg ###################################
+# def all_records_from_product():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ITEM_CODE = '$product';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ITEM_CODE = '$product';""")
+
+
+# def all_records_from_date():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 = '$date';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 = '$date';""")
+
+
+# def all_records_from_date_range():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE DATE2 >= '$start_date'
+#             AND DATE2 <= '$end_date';""")
+
+
+# def all_records_from_customer():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE ID = '$customer';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE ID = '$customer';""")
+
+
+# def all_records_from_store():
+
+#     if join:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             LEFT JOIN $product_table
+#             ON $card_table.ITEM_CODE = $product_table.productid
+#             WHERE STORE LIKE '%$store%';""")
+#     else:
+#         return Template("""
+#             SELECT $record_type FROM $table
+#             WHERE STORE LIKE '%$store%';""")
 
 
 #~ GENERAL STATUS QUERY ##############################
@@ -556,13 +557,55 @@ def db_details(
         print(e)
 
 
+def arg_triggers():
+
+    #~ date range trigger
+    date = None
+    start_date = None
+    end_date = None
+    if args.date and len(args.date) == 2:
+        start_date = args.date[0]
+        end_date = args.date[1]
+    elif args.date:
+        date = args.date[0]
+
+    #~ trigger to write to csv file
+    write_csv = False
+    if args.write_csv:
+        write_csv = True
+
+    #~ trigger for LEFT JOIN between transactions and products.
+    #~ we use LEFT JOIN because we DO want
+    #~ results without matches to return with empty fields.
+    join = False
+    if args.join:
+        join = True
+
+    #~ if args.count is not included, SELECTs will be for all records,
+    #~ flip this to COUNT or SPEND if args request
+    record_type = "*"
+    if args.count and args.spend:
+        print(f"\n!!! Please provide just one record type (spend / count / etc).")
+        sys.exit(1)
+    if args.count:
+        record_type = "COUNT(*)"
+    if args.spend:
+        record_type = "SUM(SPEND)"
+
+    #~ store numbers are in a VARCHAR field with brackets around,
+    #~ so we want to add those brackets to avoid erroneous
+    #~ substring matching, say, 786 with 1786
+    store_w_brackets = None
+    if args.store:
+        store_w_brackets = "(" + args.store + ")"
+
+    return date, start_date, end_date, join, write_csv, record_type, store_w_brackets
+
+
 #~ main ############################################
 def main():
 
     try:
-
-        #~ Create connection using psycopg2
-        connection, cursor = PG_status.connect_to_postgres(db_config)
 
         #~ Return some DB details if no query args are given
         if args.details or not any([
@@ -580,104 +623,89 @@ def main():
                 connection,)
             sys.exit(0)
 
-        #~ if args.count is not included, SELECTs will be for all records,
-        #~ flip this to COUNT or SPEND if args request
-        record_type = "*"
-        if args.count and args.spend:
-            print(f"\n!!! Please provide just one record type (spend / count / etc).")
-            sys.exit(1)
-        if args.count:
-            record_type = "COUNT(*)"
-        if args.spend:
-            record_type = "SUM(SPEND)"
-
-        #~ store numbers are in a VARCHAR field with brackets around,
-        #~ so we want to add those brackets to avoid erroneous
-        #~ substring matching, say, 786 with 1786
-        if args.store:
-            store_w_brackets = "(" + args.store + ")"
-
         #~ long-winded I know, but the following are the 15 combinations of
         #~ the four possible args given (customer, store, date, product):
         #~ four args #####################################
         if args.customer and args.date and args.product and args.store:
             if len(args.date) == 1:
-                sql = customer_records_for_product_from_date_from_store()
+                sql = queries.customer_records_for_product_from_date_from_store(join)
             if len(args.date) == 2:
-                sql = customer_records_for_product_from_date_range_from_store()
+                sql = queries.customer_records_for_product_from_date_range_from_store(join)
 
         #~ three args ####################################
-        if args.customer and args.date and args.product:
+        elif args.customer and args.date and args.product:
             if len(args.date) == 1:
-                sql = customer_records_for_product_from_date()
+                sql = queries.customer_records_for_product_from_date(join)
             if len(args.date) == 2:
-                sql = customer_records_for_product_from_date_range()
+                sql = queries.customer_records_for_product_from_date_range(join)
 
-        if args.customer and args.date and args.store:
+        elif args.customer and args.date and args.store:
             if len(args.date) == 1:
-                sql = customer_records_from_store_from_date()
+                sql = queries.customer_records_from_store_from_date(join)
             if len(args.date) == 2:
-                sql = customer_records_from_store_from_date_range()
+                sql = queries.customer_records_from_store_from_date_range(join)
 
-        if args.date and args.product and args.store:
+        elif args.date and args.product and args.store:
             if len(args.date) == 1:
-                sql = product_records_from_store_from_date()
+                sql = queries.product_records_from_store_from_date(join)
             if len(args.date) == 2:
-                sql = product_records_from_store_from_date_range()
+                sql = queries.product_records_from_store_from_date_range(join)
 
-        if args.customer and args.product and args.store:
-            sql = customer_records_for_product_from_store()
+        elif args.customer and args.product and args.store:
+            sql = queries.customer_records_for_product_from_store(join)
 
         #~ two args ######################################
-        if args.customer and args.date:
+        elif args.customer and args.date:
             if len(args.date) == 1:
-                sql = customer_records_from_date()
+                sql = queries.customer_records_from_date(join)
             if len(args.date) == 2:
-                sql = customer_records_from_date_range()
+                sql = queries.customer_records_from_date_range(join)
 
-        if args.customer and args.product:
-            sql = customer_records_for_product()
+        elif args.customer and args.product:
+            sql = queries.customer_records_for_product(join)
 
-        if args.store and args.customer:
-            sql = store_records_for_customer()
+        elif args.store and args.customer:
+            sql = queries.store_records_for_customer(join)
 
-        if args.store and args.product:
-            sql = store_records_for_product()
+        elif args.store and args.product:
+            sql = queries.store_records_for_product(join)
 
-        if args.store and args.date:
+        elif args.store and args.date:
             if len(args.date) == 1:
-                sql = store_records_for_date()
+                sql = queries.store_records_for_date(join)
             if len(args.date) == 2:
-                sql = store_records_for_date_range()
+                sql = queries.store_records_for_date_range(join)
 
-        if args.product and args.date:
+        elif args.product and args.date:
             if len(args.date) == 1:
-                sql = product_records_for_date()
+                sql = queries.product_records_for_date(join)
             if len(args.date) == 2:
-                sql = product_records_for_date_range()
+                sql = queries.product_records_for_date_range(join)
 
         #~ one arg #######################################
-        if args.customer:
-            sql = all_records_from_customer()
+        elif args.customer:
+            sql = queries.all_records_from_customer(join)
 
-        if args.product:
-            sql = all_records_from_product()
+        elif args.product:
+            sql = queries.all_records_from_product(join)
 
-        if args.store:
-            sql = all_records_from_store()
+        elif args.store:
+            sql = queries.all_records_from_store(join)
 
-        if args.date:
-            print("bob")
+        elif args.date:
             if len(args.date) == 1:
-                sql = all_records_from_date()
+                sql = queries.all_records_from_date(join)
             if len(args.date) == 2:
-                sql = all_records_from_date_range()
+                sql = queries.all_records_from_date_range(join)
 
+        #~ Create connection using psycopg2
+        connection, cursor = PG_status.connect_to_postgres(db_config)
         try:
+            #~ modify the sql template with our args
             cursor.execute(sql.substitute(
                 customer = args.customer,
                 product = args.product,
-                date = args.date[0],
+                date = date,
                 start_date = start_date,
                 end_date = end_date,
                 store = args.store,
@@ -685,11 +713,12 @@ def main():
                 card_table = db_config.boots_transactions,
                 product_table = db_config.boots_products,
                 table = db_config.boots_transactions,))
+            #~ submit the query
             result = cursor.fetchall()
             connection.close()
             return output_type(record_type, result, write_csv,)
         except Exception as e:
-            print(e)
+            print(f"There was a problem sumbitting the query:", e)
 
     except KeyboardInterrupt:
         print("OK, stopping.")
@@ -702,28 +731,17 @@ def main():
         traceback.print_exc(file = sys.stdout)
 
 
+
 if __name__ == "__main__":
 
     parser, args = args_setup()
     if len(sys.argv) < 2:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    #~ trigger for LEFT JOIN between transactions and products.
-    #~ we use LEFT JOIN because we DO want
-    #~ results without matches to return with empty fields.
-    join = False
-    if args.join:
-        join = True
-    #~ trigger to write to csv file
-    write_csv = False
-    if args.write_csv:
-        write_csv = True
-    #~ date range trigger
-    start_date = None
-    end_date = None
-    if args.date and len(args.date) == 2:
-            start_date = args.date[0]
-            end_date = args.date[1]
+
+    #~ we need to fiddle a little with the args
+    (date, start_date, end_date, join,
+     write_csv, record_type, store_w_brackets,) = arg_triggers()
 
     ####~ main runner
     records = main()
