@@ -1,3 +1,14 @@
+"""
+This is all the combinations of SQL queries that can be made
+from the four major query options:
+customer
+product
+date (+ daterange)
+store
+
+Each returns a Template, for sql substitution in main scripts.
+"""
+
 from string import Template
 
 #~ QUERIES FUNCTIONS start #########################
