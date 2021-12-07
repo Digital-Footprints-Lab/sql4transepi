@@ -69,8 +69,10 @@ python CSV2PG_foodproducts.py -i my_data.csv
 These will report what they have done, and the status of the database after import.
 
 #### tesco_card_JSON2CSV.py 
-Tescos loyalty card data is provided as nested JSON. This script creates a CSV, with one item per row, and adding a storeID, timestamp and a hash-generated customer ID to each transaction item. (Tescos cards data do not have complete card numbers, or any other customer-identifiers.)
-```python tesco_card_JSON2CSV.py -i my_tesco_data210929.json```
+Tescos loyalty card data is provided as nested JSON. This script creates a CSV, with one item per row, and adding a storeID, timestamp and a hash-generated customer ID to each transaction item. (Tescos cards data do not have complete card numbers, or any other customer-identifiers.) The output file will be named the same as the input, but with `.csv` file name suffix.
+```
+python tesco_card_JSON2CSV.py -i my_tesco_data210929.json
+```
 
 ## Database query
 All scripts named starting with `PG_querier` are for returning data in the database in response to queries that you build by providing flags. Arguments need to be provided to build your query. The query can be returned straight to the terminal (so can be piped to other commands), or can be sent to a CSV file. Queries can also return total spends or counts, rather than the data from the query itself.
