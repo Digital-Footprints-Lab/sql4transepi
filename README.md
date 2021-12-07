@@ -42,35 +42,37 @@ If you get a `role does not exist` error, run this command to make yourself the 
 
 You will now be ready to use these scripts.
 
-
-## Scripts
-
 All scripts provide full help details by adding the flag `--help`, for example
 
-`python CSV2PG_boots_card.py --help`
+```python CSV2PG_boots_card.py --help```
 
-A status-reporting script is included, which can return technical details of the database, tables, and the connection to the working database:
+## PG_status.py
+This reports details of the status of PG tables, DBs and connection status, and can remove tables and columns as requested.
+```python PG_status.py```
+This script also takes some arguments, if you want further detail on the status of Postgres:
+```
+  --tables              Provide table information.
+  --connection          Provide DB connection information.
+  --drop_table TABLE    Delete table from DB. Be careful, this operation is permanent.
+  --drop_column TABLE COLUMN
+                        Delete column from table (specify both). Be careful, this operation is permanent.
+```
 
-`python PG_status.py`
-
-#### • Data importing scripts 
+## Data import
 All of the scripts named starting with `CSV2PG` import comma separated values files into Postgres. The data they can import are Boots Advantage loyalty cards, Boots product details (from the [scraper associated with this project](github.com/altanner/snax2)), Tescos Clubcard loyalty cards, as well as testing datasets - these are all run by specifying the file to import (the `my_data.csv` below will need to match the file you are importing):
-
 ```
 python CSV2PG_boots_card.py -i my_data.csv
 python CSV2PG_boots_scrape.py -i my_data.csv
 python CSV2PG_tesco_card.py -i my_data.csv
 python CSV2PG_foodproducts.py -i my_data.csv
 ```
-
 These will report what they have done, and the status of the database after import.
 
-#### • tesco_card_JSON2CSV.py 
+#### tesco_card_JSON2CSV.py 
 Tescos loyalty card data is provided as nested JSON. This script creates a CSV, with one item per row, and adding a storeID, timestamp and a hash-generated customer ID to each transaction item. (Tescos cards data do not have complete card numbers, or any other customer-identifiers.)
-
 ```python tesco_card_JSON2CSV.py -i my_tesco_data210929.json```
 
-#### • Database query scripts 
+## Database query
 All scripts named starting with `PG_querier` are for returning data in the database in response to queries that you build by providing flags. Arguments need to be provided to build your query. The query can be returned straight to the terminal (so can be piped to other commands), or can be sent to a CSV file. Queries can also return total spends or counts, rather than the data from the query itself.
 
 The `--join` argument is used to combine records from the transaction table (which typically has minimal product details), with records in the product table (more comprehensive product information, for example from product scrapes or other sources of information.
@@ -111,7 +113,7 @@ python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830 --spen
 ```
 "How many times did customer 9874786793 buy product 8199922 in 2018?"
 ```
-python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20190101 --count
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20181231 --count
 ```
 "How much did customer 9874786793 spend on product 8199922 between the 21st of June 2018 and the 30th of August 2018?"
 ```
