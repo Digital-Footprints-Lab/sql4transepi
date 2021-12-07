@@ -39,7 +39,7 @@ def args_setup():
         help = "Delete table from DB. Be careful, this operation is permanent.")
     parser.add_argument(
         "--drop_column", action = "store", nargs = 2,
-        help = "Delete column from table. Be careful, this operation is permanent.")
+        help = "Delete column from table (specify both). Be careful, this operation is permanent.")
 
     args = parser.parse_args()
 
