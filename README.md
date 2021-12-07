@@ -116,6 +116,10 @@ python PG_querier_boots.py --customer 9874786793 --date 20210217
 ```
 python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830
 ```
+"What products did customer 9874786793 buy between the 17th of February 2021 and the 30th of August 2021, including the full product details?"
+```
+python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --join
+```
 "How much did customer 9874786793 spend between the 17th of February 2021 and the 30th of August 2021?"
 ```
 python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --spend
