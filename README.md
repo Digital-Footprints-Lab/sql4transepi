@@ -78,9 +78,7 @@ The `--join` argument is used to combine records from the transaction table (whi
 The full arguments are:
 
 ```
-  --details             Provide DB and table information.
-  --product_table PRODUCT_TABLE
-                        The name of the product table to query.
+  --details             Return DB and table status information.
   --customer CUSTOMER   Customer code to query. Format: 9874786793
   --product PRODUCT     Product code to query. Format: 8199922
   --date DATE [DATE ...]
