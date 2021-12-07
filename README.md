@@ -8,47 +8,54 @@ Python scripts for building and querying PostgreSQL databases. These are designe
 
 ## Getting Started
 
-1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
+1. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
 
-`git clone https://github.com/altanner/sql4transepi.git`
-
-and move into the repository folder:
-
-`cd sql4transepi`
-
-2. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
-
-3. Create a database called "TE_DB" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
-
-`createdb TE_DB`
-
+2. Create a database called "TE_DB" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
+```
+createdb TE_DB
+```
 If you get a `role does not exist` error, run this command to make yourself the owner of the database:
+```
+sudo -u postgres createuser --superuser $USER
+```
 
-`sudo -u postgres createuser --superuser $USER`
+3. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
+```
+git clone https://github.com/altanner/sql4transepi.git
+```
+and move into the repository folder:
+```
+cd sql4transepi
+```
 
 4. Have Python >= 3.8 installed, and create a fresh virtual environment. This command creates a folder with clean Python binaries which we can then update to be streamlined for these scripts:
+```
+python3 -m venv ./venv
+```
 
-`python3 -m venv ./venv`
-
-5. activate this clean Python with
-
-`source ./venv/bin/activate`
-
+5. activate this clean Python environment with
+```
+source ./venv/bin/activate
+```
 (to exit this virtual environment, type `deactivate`)
 
 6. finally, ask `pip` to install the `requirements.txt` file to get your libraries into this fresh Python
-
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 You will now be ready to use these scripts.
 
 All scripts provide full help details by adding the flag `--help`, for example
-
-```python CSV2PG_boots_card.py --help```
+```
+python CSV2PG_boots_card.py --help
+```
 
 ## PG_status.py
 This reports details of the status of PG tables, DBs and connection status, and can remove tables and columns as requested.
-```python PG_status.py```
+```
+python PG_status.py
+```
 This script also takes some arguments, if you want further detail on the status of Postgres:
 ```
   --tables              Provide table information.
@@ -69,8 +76,10 @@ python CSV2PG_foodproducts.py -i my_data.csv
 These will report what they have done, and the status of the database after import.
 
 #### tesco_card_JSON2CSV.py 
-Tescos loyalty card data is provided as nested JSON. This script creates a CSV, with one item per row, and adding a storeID, timestamp and a hash-generated customer ID to each transaction item. (Tescos cards data do not have complete card numbers, or any other customer-identifiers.)
-```python tesco_card_JSON2CSV.py -i my_tesco_data210929.json```
+Tescos loyalty card data is provided as nested JSON. This script creates a CSV, with one item per row, and adding a storeID, timestamp and a hash-generated customer ID to each transaction item. (Tescos cards data do not have complete card numbers, or any other customer-identifiers.) The output file will be named the same as the input, but with `.csv` file name suffix.
+```
+python tesco_card_JSON2CSV.py -i my_tesco_data210929.json
+```
 
 ## Database query
 All scripts named starting with `PG_querier` are for returning data in the database in response to queries that you build by providing flags. Arguments need to be provided to build your query. The query can be returned straight to the terminal (so can be piped to other commands), or can be sent to a CSV file. Queries can also return total spends or counts, rather than the data from the query itself.
@@ -99,25 +108,29 @@ Some examples:
 ```
 python PG_querier_boots.py --customer 9874786793
 ```
-"What products did customer 9874786793 buy on the 21st of June 2018?"
+"What products did customer 9874786793 buy on the 17th of February 2021?"
 ```
-python PG_querier_boots.py --customer 9874786793 --date 20180621
+python PG_querier_boots.py --customer 9874786793 --date 20210217
 ```
-"What products did customer 9874786793 buy between the 21st of June 2018 and the 30th of August 2018?"
+"What products did customer 9874786793 buy between the 17th of February 2021 and the 30th of August 2021?"
 ```
-python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830
+python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830
 ```
-"How much did customer 9874786793 spend between the 21st of June 2018 and the 30th of August 2018?"
+"What products did customer 9874786793 buy between the 17th of February 2021 and the 30th of August 2021, including the full product details?"
 ```
-python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830 --spend
+python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --join
+```
+"How much did customer 9874786793 spend between the 17th of February 2021 and the 30th of August 2021?"
+```
+python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --spend
 ```
 "How many times did customer 9874786793 buy product 8199922 in 2018?"
 ```
-python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20181231 --count
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20210217 20211231 --count
 ```
-"How much did customer 9874786793 spend on product 8199922 between the 21st of June 2018 and the 30th of August 2018?"
+"How much did customer 9874786793 spend on product 8199922 between the 17th of February 2021 and the 30th of August 2021?"
 ```
-python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180621 20180830 --spend
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20210217 20210830 --spend
 ```
 "Write all transactions products and their full details for customer 9874786793 to a CSV file called `file1.csv`"
 ```
