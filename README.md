@@ -8,17 +8,9 @@ Python scripts for building and querying PostgreSQL databases. These are designe
 
 ## Getting Started
 
-1. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
-```
-git clone https://github.com/altanner/sql4transepi.git
-```
-and move into the repository folder:
-```
-cd sql4transepi
-```
-2. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
+1. Install Postgres for the command line. You can follow a [instructions](https://www.postgresqltutorial.com/install-postgresql/) to do this here. There are guides for Linux, MacOS and Windows in that link.
 
-3. Create a database called "TE_DB" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
+2. Create a database called "TE_DB" to receive the incoming data. This can be done by running `createdb` (this is a postgres-installed command):
 ```
 createdb TE_DB
 ```
@@ -27,12 +19,21 @@ If you get a `role does not exist` error, run this command to make yourself the 
 sudo -u postgres createuser --superuser $USER
 ```
 
+3. Copy the files in this repository to your machine, either through the [download](https://github.com/altanner/sql4transepi/archive/refs/heads/main.zip) link, or by cloning the repo:
+```
+git clone https://github.com/altanner/sql4transepi.git
+```
+and move into the repository folder:
+```
+cd sql4transepi
+```
+
 4. Have Python >= 3.8 installed, and create a fresh virtual environment. This command creates a folder with clean Python binaries which we can then update to be streamlined for these scripts:
 ```
 python3 -m venv ./venv
 ```
 
-5. activate this clean Python with
+5. activate this clean Python environment with
 ```
 source ./venv/bin/activate
 ```
