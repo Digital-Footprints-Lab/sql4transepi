@@ -48,7 +48,9 @@ All scripts provide full help details by adding the flag `--help`, for example
 
 ## PG_status.py
 This reports details of the status of PG tables, DBs and connection status, and can remove tables and columns as requested.
-```python PG_status.py```
+```
+python PG_status.py
+```
 This script also takes some arguments, if you want further detail on the status of Postgres:
 ```
   --tables              Provide table information.
