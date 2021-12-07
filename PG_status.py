@@ -217,7 +217,7 @@ def main():
     if args.tables:
         table_details(cursor)
         for func in [CSV2PG_tesco_card, CSV2PG_boots_card,
-                     CSV2PG_boots_scrape, CSV2PG_foodproducts]:
+                     CSV2PG_boots_products, CSV2PG_foodproducts]:
             print("\n" + 42 * "=")
             func.table_details(connection, cursor)
             #~ we have to refresh the connection after each check, unsure why.
