@@ -113,7 +113,7 @@ python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830 --spen
 ```
 "How many times did customer 9874786793 buy product 8199922 in 2018?"
 ```
-python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20190101 --count
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20181231 --count
 ```
 "How much did customer 9874786793 spend on product 8199922 between the 21st of June 2018 and the 30th of August 2018?"
 ```
