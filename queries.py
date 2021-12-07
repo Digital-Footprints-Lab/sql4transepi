@@ -3,7 +3,7 @@ This is all the combinations of SQL queries that can be made
 from the four major query options:
 customer
 product
-date (+ daterange)
+date (or start_date + end_date)
 store
 
 Each returns a Template, for sql substitution in main scripts.

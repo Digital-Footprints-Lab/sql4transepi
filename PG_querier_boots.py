@@ -22,13 +22,10 @@ def args_setup():
 
     parser = argparse.ArgumentParser(
         description = "PostgreSQL DB Querier: Boots transaction data",
-        epilog = "Example: python boots_PG_querier.py --customer 9874786793 --date 20180621 --spend")
+        epilog = "Example: python PG_querier_boots.py --customer 9874786793 --date 20180621 --spend")
     parser.add_argument(
         "--details", action = "store_true",
-        help = "Provide DB and table information.")
-    parser.add_argument(
-        "--product_table", action = "store",
-        help = "The name of the product table to query.")
+        help = "Return DB and table status information.")
     parser.add_argument(
         "--customer", action = "store",
         help = "Customer code to query. Format: 9874786793")
@@ -152,7 +149,7 @@ def db_details(
         print(f"\nTable name:    boots_products\nColumns:       {product_column_count[0][0]}")
         print(f"Records:       {product_record_count[0][0]}")
         print(f"\nAbove are some details about the current DB. Please provide a query.")
-        print(f"For help: python boots_PG_querier.py --help")
+        print(f"For help: python PG_querier_boots.py --help")
     except Exception as e:
         print(e)
 
@@ -210,7 +207,6 @@ def main():
         #~ Return some DB details if no query args are given
         if args.details or not any([
             args.product,
-            args.product_table,
             args.customer,
             args.date,
             args.store,
