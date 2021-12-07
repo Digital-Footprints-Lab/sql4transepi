@@ -73,7 +73,7 @@ Tescos loyalty card data is provided as nested JSON. This script creates a CSV, 
 #### • Database query scripts 
 All scripts named starting with `PG_querier` are for returning data in the database in response to queries that you build by providing flags. Arguments need to be provided to build your query. The query can be returned straight to the terminal (so can be piped to other commands), or can be sent to a CSV file. Queries can also return total spends or counts, rather than the data from the query itself.
 
-The `join` argument is used to combine records from the transaction table (which typically has minimal product details), with records in the product table (more comprehensive product information, for example from product scrapes or other sources of information.
+The `--join` argument is used to combine records from the transaction table (which typically has minimal product details), with records in the product table (more comprehensive product information, for example from product scrapes or other sources of information.
 
 The full arguments are:
 
@@ -97,29 +97,29 @@ Some examples:
 
 "What products has customer 9874786793 bought?"
 ```
-python boots_PG_querier.py --customer 9874786793
+python PG_querier_boots.py --customer 9874786793
 ```
 "What products did customer 9874786793 buy on the 21st of June 2018?"
 ```
-python boots_PG_querier.py --customer 9874786793 --date 20180621
+python PG_querier_boots.py --customer 9874786793 --date 20180621
 ```
 "What products did customer 9874786793 buy between the 21st of June 2018 and the 30th of August 2018?"
 ```
-python boots_PG_querier.py --customer 9874786793 --date 20180621 20180830
+python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830
 ```
 "How much did customer 9874786793 spend between the 21st of June 2018 and the 30th of August 2018?"
 ```
-python boots_PG_querier.py --customer 9874786793 --date 20180621 20180830 --spend
+python PG_querier_boots.py --customer 9874786793 --date 20180621 20180830 --spend
 ```
 "How many times did customer 9874786793 buy product 8199922 in 2018?"
 ```
-python boots_PG_querier.py --customer 9874786793 --product 8199922 --date 20180101 20190101 --count
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180101 20190101 --count
 ```
 "How much did customer 9874786793 spend on product 8199922 between the 21st of June 2018 and the 30th of August 2018?"
 ```
-python boots_PG_querier.py --customer 9874786793 --product 8199922 --date 20180621 20180830 --spend
+python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20180621 20180830 --spend
 ```
-"Write all transactions products and their full details to a CSV file called `file1.csv`"
+"Write all transactions products and their full details for customer 9874786793 to a CSV file called `file1.csv`"
 ```
-python boots_PG_querier.py --customer 9874786793 --join
+python PG_querier_boots.py --customer 9874786793 --join --write_csv file1.csv
 ```
