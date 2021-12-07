@@ -124,7 +124,7 @@ python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --join
 ```
 python PG_querier_boots.py --customer 9874786793 --date 20210217 20210830 --spend
 ```
-"How many times did customer 9874786793 buy product 8199922 in 2018?"
+"How many times did customer 9874786793 buy product 8199922 in 2021?"
 ```
 python PG_querier_boots.py --customer 9874786793 --product 8199922 --date 20210217 20211231 --count
 ```
