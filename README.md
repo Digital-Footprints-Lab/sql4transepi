@@ -102,7 +102,7 @@ The full arguments are:
                         Write the results to a CSV file (specify the filename).
 ```
 
-Some examples:
+Here are some typical query examples:
 
 "What products has customer 9874786793 bought?"
 ```
