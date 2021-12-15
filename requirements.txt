@@ -2,4 +2,6 @@ chardet==4.0.0
 pandas==1.3.1
 pip-chill==1.0.1
 psycopg2-binary==2.9.1
+ipython-sql
+sqlalchemy
 
